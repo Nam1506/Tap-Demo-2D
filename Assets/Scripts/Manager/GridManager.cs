@@ -27,12 +27,17 @@ public class GridManager : MonoBehaviour
     public List<GameObject> listItem;
     public List<GameObject> listRotate;
     public List<GameObject> listHiddenNumber;
+    public GameObject blockedTile;
+
+    public bool haveSaw;
 
 
     public string moveCount;
 
     [SerializeField] float TIME_FADE_HIDDEN;
     [SerializeField] TextMeshProUGUI moveText;
+    public bool checkRotation = false;
+
 
 
     private void Awake()
@@ -222,7 +227,6 @@ public class GridManager : MonoBehaviour
     public bool CheckLoseGame()
     {
 
-        Debug.Log("listItem.Count: " + listItem.Count);
 
         if (listItem.Count == 0)
         {
@@ -234,11 +238,9 @@ public class GridManager : MonoBehaviour
             return true;
         }
 
-        Debug.Log("listRotateCount: " + listRotate.Count);
 
         for (int i = 0; i < listRotate.Count; i++)
         {
-            Debug.Log("Enter1");
 
             GameObject rotateSlot = listRotate[i];
             TileSlot rotateTileSlot = rotateSlot.GetComponent<TileSlot>();
@@ -248,9 +250,15 @@ public class GridManager : MonoBehaviour
                 break;
             }
 
-
-            if (rotateTileSlot.CheckRotate() != 0)
+            if (this.haveSaw)
             {
+                return false;
+            }
+
+
+            if (checkRotation)
+            {
+                checkRotation = false;
                 return false;
             }
 

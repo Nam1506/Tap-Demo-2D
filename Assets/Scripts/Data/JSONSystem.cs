@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -32,6 +32,33 @@ public class JSONSystem : MonoBehaviour
         Instance = this;
     }
 
+    public Color HexToRGBA(string hex)
+    {
+        if (hex.StartsWith("#"))
+            hex = hex.Substring(1);
+
+        if (hex.Length != 6 && hex.Length != 8)
+        {
+            Debug.LogError("Định dạng hex không hợp lệ!");
+            return Color.white;
+        }
+
+        byte red = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+        byte green = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+        byte blue = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+        byte alpha = 255;
+
+        if (hex.Length == 8)
+            alpha = byte.Parse(hex.Substring(6, 2), System.Globalization.NumberStyles.HexNumber);
+
+        float r = (float)red / 255f;
+        float g = (float)green / 255f;
+        float b = (float)blue / 255f;
+        float a = (float)alpha / 255f;
+
+        return new Color(r, g, b, a);
+    }
+
     public void SaveToJson()
     {
         Data data = new Data();
@@ -62,7 +89,7 @@ public class JSONSystem : MonoBehaviour
             map.cols = grid.cols;
             map.move_count = int.Parse(grid.moveCount);
 
-            if(GameManager.Instance.listGrid.IndexOf(grid) == GameManager.Instance.listGrid.Count - 1)
+            if (GameManager.Instance.listGrid.IndexOf(grid) == GameManager.Instance.listGrid.Count - 1)
             {
                 map.move_count = int.Parse(GameManager.Instance.moveInputField.text);
             }
@@ -236,7 +263,7 @@ public class JSONSystem : MonoBehaviour
                     }
 
                     GameObject slot = grid.slots.Find(item => item.GetComponent<TileSlot>().rowPos == i && item.GetComponent<TileSlot>().colPos == j);
-                    
+
                     GameObject item;
 
                     if (GameManager.Instance.isSceneGame())
@@ -262,6 +289,30 @@ public class JSONSystem : MonoBehaviour
                         else
                         {
                             GameObject container = Instantiate(containerPrefab, slot.transform);
+
+                            TrailRenderer trailRenderer = container.GetComponent<TrailRenderer>();
+
+                            if (data.color == 0)
+                            {
+                                trailRenderer.startColor = HexToRGBA("68E0B8");
+                                trailRenderer.endColor = HexToRGBA("5CACFD");
+                            }
+                            else if (data.color == 1)
+                            {
+                                trailRenderer.startColor = HexToRGBA("8DF151");
+                                trailRenderer.endColor = HexToRGBA("61ABFF");
+                            }
+                            else if(data.color == 2)
+                            {
+                                trailRenderer.startColor = HexToRGBA("FC818B");
+                                trailRenderer.endColor = HexToRGBA("E97634");
+                            }
+                            else
+                            {
+                                trailRenderer.startColor = HexToRGBA("FFF85D");
+                                trailRenderer.endColor = HexToRGBA("FF5AA3");
+                            }
+
                             item = Instantiate(itemPrefab, container.transform);
 
                             container.transform.localScale = Vector3.one * 1.7f;
@@ -411,35 +462,64 @@ public class JSONSystem : MonoBehaviour
         }
         else
         {
-            for(int i = 1; i < GameManager.Instance.listGrid.Count; i++)
+            for (int i = 0; i < GameManager.Instance.listGrid.Count; i++)
             {
 
                 GridManager grid = GameManager.Instance.listGrid[i];
 
-                foreach(GameObject slot in grid.slots)
+                if (i >= 1)
                 {
-                    slot.GetComponent<BoxCollider2D>().enabled = false;
+                    foreach (GameObject slot in grid.slots)
+                    {
+                        slot.GetComponent<BoxCollider2D>().enabled = false;
+                    }
                 }
+
+                for (int j = 0; j < grid.listRotate.Count; j++)
+                {
+                    GameObject rotater = grid.listRotate[j];
+
+                    if (!grid.haveSaw)
+                    {
+                        foreach (Item item in rotater.transform.GetComponent<TileSlot>().dictionary["Up"])
+                        {
+                            if (item.type == item.saw)
+                            {
+                                grid.haveSaw = true;
+                                break;
+                            }
+                        }
+
+                        foreach (Item item in rotater.transform.GetComponent<TileSlot>().dictionary["Right"])
+                        {
+                            if (item.type == item.saw)
+                            {
+                                grid.haveSaw = true;
+                                break;
+                            }
+                        }
+                        foreach (Item item in rotater.transform.GetComponent<TileSlot>().dictionary["Down"])
+                        {
+                            if (item.type == item.saw)
+                            {
+                                grid.haveSaw = true;
+                                break;
+                            }
+                        }
+                        foreach (Item item in rotater.transform.GetComponent<TileSlot>().dictionary["Left"])
+                        {
+                            if (item.type == item.saw)
+                            {
+                                grid.haveSaw = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
             }
+
         }
-
-        //else
-        //{
-        //    float distance = 1f;
-        //    for(int i = 0; i < GameManager.Instance.listGrid.Count; i++)
-        //    {
-        //        GridManager grid = GameManager.Instance.listGrid[i];
-        //        GameObject maskPrefab = Instantiate(mask, grid.transform);
-
-        //        if(i != 0)
-        //        {
-        //            grid.transform.position = new Vector3(grid.transform.position.x, grid.transform.position.y, distance);
-        //            distance++;
-        //        }
-
-
-        //    }
-        //}
 
         Camera.main.orthographicSize = data.maxCamera;
     }

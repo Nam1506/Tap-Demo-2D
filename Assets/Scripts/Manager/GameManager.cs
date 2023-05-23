@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -39,10 +39,12 @@ public class GameManager : MonoBehaviour
     public bool isRotating = false;
     public int currentIndexGrid = -1;
     public float maxCamera = 10f;
+    public float timeCountDown;
 
     public GridManager currentGrid;
 
     public int combo = 0;
+
 
     private void Awake()
     {
@@ -52,6 +54,7 @@ public class GameManager : MonoBehaviour
         Instance = this;
     }
 
+    
 
     private void Start()
     {

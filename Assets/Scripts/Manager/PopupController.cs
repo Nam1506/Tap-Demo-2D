@@ -14,6 +14,8 @@ public class PopupController : MonoBehaviour
     [SerializeField] GameObject popUpSetting;
     [SerializeField] GameObject popUpLose;
     [SerializeField] GameObject popUpWin;
+    [SerializeField] Canvas canva;
+
     [SerializeField] GameObject coinPrefab;
 
     [SerializeField] GameObject fireWorkBase;
@@ -37,6 +39,7 @@ public class PopupController : MonoBehaviour
     [SerializeField] float jumpPower;
     [SerializeField] float durationJump;
     [SerializeField] int numberCoin;
+
 
     //--------Config--------
     private float timeFade = 0.35f;
@@ -123,8 +126,8 @@ public class PopupController : MonoBehaviour
         {
             ParticleSystem.MainModule mainModule = fireWork[i].main;
             float num = Camera.main.orthographicSize / 10 * 2;
-            mainModule.startSpeed = new ParticleSystem.MinMaxCurve(18 * num, 25 * num);
-            mainModule.startSize = new ParticleSystem.MinMaxCurve(0.15f * num, 0.3f * num);
+            mainModule.startSpeed = 20 * num / 1.5f;
+
         }
 
         popUpWin.GetComponent<CanvasGroup>().DOFade(1f, timeFade)

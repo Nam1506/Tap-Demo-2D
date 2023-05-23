@@ -8,6 +8,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using Sirenix.OdinInspector;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class TileSlot : MonoBehaviour
 {
@@ -34,6 +35,8 @@ public class TileSlot : MonoBehaviour
     public GameObject rotateParent;
 
     [SerializeField] float timeRotate;
+    [SerializeField] float timeScaleBlock;
+    [SerializeField] float targetScaleBlock;
 
     // --------Config--------
     private const float TIME_BREAK = 0.15f;
@@ -53,40 +56,33 @@ public class TileSlot : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log("1");
 
         if (!GameManager.Instance.isSceneGame())
         {
             return;
         }
-        Debug.Log("1");
 
         if (GameManager.Instance.state == GameManager.State.Pause)
         {
             return;
         }
-        Debug.Log("1");
 
-        Debug.Log("move: " + GameManager.Instance.currentGrid.moveCount);
 
         if (GameManager.Instance.currentGrid.moveCount == "0")
         {
             return;
         }
 
-        Debug.Log("1");
 
         if (this.transform.childCount != 1)
         {
             return;
         }
-        Debug.Log("1");
 
         if (GameManager.Instance.isRotating)
         {
             return;
         }
-        Debug.Log("1");
 
         container = this.transform.GetChild(0).gameObject;
         item = container.GetComponentInChildren<Item>();
@@ -125,15 +121,16 @@ public class TileSlot : MonoBehaviour
 
         }
 
+        int degree = 0;
+
         if (nameItem == item.rotate)
         {
             canMove = false;
-            int degree = CheckRotate();
+            degree = CheckRotate();
             Debug.Log("Degree: " + degree);
             DoRotate(degree);
         }
 
-        Debug.Log("Enter");
 
         GameManager.Instance.currentGrid.DecreamentMovesCount();
 
@@ -141,7 +138,7 @@ public class TileSlot : MonoBehaviour
         if (canMove == true)
         {
 
-            if(GameManager.Instance.combo >= 1)
+            if (GameManager.Instance.combo >= 1)
             {
                 AudioManager.Instance.PlaySFX2("SFX");
             }
@@ -166,7 +163,7 @@ public class TileSlot : MonoBehaviour
             canMove = true;
         }
 
-        if(nameItem == item.rotate)
+        if (nameItem == item.rotate)
         {
             bool isOver = GameManager.Instance.currentGrid.CheckLoseGame();
 
@@ -177,6 +174,42 @@ public class TileSlot : MonoBehaviour
                 if (isOver == true)
                 {
                     GameManager.Instance.state = GameManager.State.Pause;
+
+                    if (degree == 0)
+                    {
+
+                        Debug.Log("Check = 0");
+
+                        GridManager gridCurrent = GameManager.Instance.currentGrid;
+
+                        float time = 0f;
+
+                        for (int i = 0; i < gridCurrent.listItem.Count; i++)
+                        {
+                            SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
+                            DOVirtual.DelayedCall(time, () =>
+                            {
+                                spriteRenderer.color = new Color(1, 0, 0, 1);
+                            });
+
+                            DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown, () =>
+                            {
+                                spriteRenderer.color = new Color(1, 1, 1, 1);
+
+                            });
+
+                            time += GameManager.Instance.timeCountDown;
+
+                        }
+
+                        DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown * 2, () =>
+                        {
+                            AudioManager.Instance.sfxSource2.pitch = 1;
+                            GameManager.Instance.combo = 0;
+                            PopupController.Instance.TurnOnPopupLose();
+                        });
+                    }
+
                     DOVirtual.DelayedCall(1f, () =>
                     {
                         AudioManager.Instance.sfxSource2.pitch = 1;
@@ -198,7 +231,31 @@ public class TileSlot : MonoBehaviour
                 if (isOver == true)
                 {
                     GameManager.Instance.state = GameManager.State.Pause;
-                    DOVirtual.DelayedCall(1f, () =>
+
+                    GridManager gridCurrent = GameManager.Instance.currentGrid;
+
+                    float time = 0f;
+
+                    for (int i = 0; i < gridCurrent.listItem.Count; i++)
+                    {
+                        Debug.Log("hello");
+                        SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
+                        DOVirtual.DelayedCall(time, () =>
+                        {
+                            spriteRenderer.color = new Color(1, 0, 0, 1);
+                        });
+
+                        DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown, () =>
+                        {
+                            spriteRenderer.color = new Color(1, 1, 1, 1);
+
+                        });
+
+                        time += GameManager.Instance.timeCountDown;
+
+                    }
+
+                    DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown * 2, () =>
                     {
                         AudioManager.Instance.sfxSource2.pitch = 1;
                         GameManager.Instance.combo = 0;
@@ -242,7 +299,7 @@ public class TileSlot : MonoBehaviour
                                     GameManager.Instance.listGrid[index].gameObject.SetActive(false);
                                 });
                         }
-                      
+
                     });
 
                     DOVirtual.DelayedCall(TIME_WAIT_FADE_GRID + TIME_WAIT_FADE_GRID, () =>
@@ -402,11 +459,24 @@ public class TileSlot : MonoBehaviour
 
             GameObject away = this.container;
 
-            away.transform.DOMoveY(floatEnd, duration, false).SetEase(ease)
+            away.GetComponent<TrailRenderer>().enabled = true;
+
+            float scale = away.transform.localScale.x;
+
+            away.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
                 .OnComplete(() =>
                 {
-                    Destroy(away.gameObject);
+                    away.transform.DOScale(scale, timeScaleBlock)
+                    .OnComplete(() =>
+                    {
+                         away.transform.DOMoveY(floatEnd, duration, false).SetEase(ease)
+                            .OnComplete(() =>
+                            {
+                                Destroy(away.gameObject);
+                            });
+                    });
                 });
+
         }
 
         else
@@ -434,12 +504,23 @@ public class TileSlot : MonoBehaviour
                     boxCollider.enabled = false;
                     listBox.Add(boxCollider);
 
-                    float y1Original = targetBlockSlot.transform.position.y;
-                    targetBlockSlot.transform.DOMoveY(y1Original + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                    float scale = targetBlockSlot.transform.localScale.x;
+
+                    targetBlockSlot.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
                         .OnComplete(() =>
                         {
-                            targetBlockSlot.transform.DOMoveY(y1Original, TIME_DISTANCE_MOVE).SetEase(ease);
+                            targetBlockSlot.transform.DOScale(scale, timeScaleBlock)
+                            .OnComplete(() =>
+                            {
+                                float y1Original = targetTileSlot.transform.position.y;
+                                targetBlockSlot.transform.DOMoveY(y1Original + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                    .OnComplete(() =>
+                                    {
+                                        targetBlockSlot.transform.DOMoveY(y1Original, TIME_DISTANCE_MOVE).SetEase(ease);
+                                    });
+                            });
                         });
+
 
                     //Other
                     float x = 0;
@@ -465,8 +546,8 @@ public class TileSlot : MonoBehaviour
                         boxColorCollider.enabled = false;
                         listBox.Add(boxColorCollider);
 
-                        float yOriginal = blockSlot.transform.position.y;
-
+                        //float yOriginal = blockSlot.transform.position.y;
+                        float yOriginal = tileSlot.transform.position.y;
                         DOVirtual.DelayedCall(TIME_DISTANCE_MOVE + x, () =>
                         {
                             blockSlot.transform.DOMoveY(yOriginal + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
@@ -691,12 +772,25 @@ public class TileSlot : MonoBehaviour
 
             GameObject away = this.container;
 
+            away.GetComponent<TrailRenderer>().enabled = true;
 
-            away.transform.DOMoveY(-floatEnd, duration, false).SetEase(ease)
+            float scale = away.transform.localScale.x;
+
+            away.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
                 .OnComplete(() =>
-            {
-                Destroy(away.gameObject);
-            });
+                {
+                    away.transform.DOScale(scale, timeScaleBlock)
+                    .OnComplete(() =>
+                    {
+                        away.transform.DOMoveY(-floatEnd, duration, false).SetEase(ease)
+                            .OnComplete(() =>
+                            {
+                                Destroy(away.gameObject);
+                            });
+                    });
+                });
+
+
 
         }
 
@@ -723,13 +817,26 @@ public class TileSlot : MonoBehaviour
                     boxCollider.enabled = false;
                     listBox.Add(boxCollider);
 
-                    float y1Original = targetBlockSlot.transform.position.y;
-                    targetBlockSlot.transform.DOMoveY(y1Original - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+
+                    float scale = targetBlockSlot.transform.localScale.x;
+
+                    targetBlockSlot.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
                         .OnComplete(() =>
                         {
-                            targetBlockSlot.transform.DOMoveY(y1Original, TIME_DISTANCE_MOVE).SetEase(ease);
+                            targetBlockSlot.transform.DOScale(scale, timeScaleBlock)
+                            .OnComplete(() =>
+                            {
+                                float y1Original = targetTileSlot.transform.position.y;
 
+                                targetBlockSlot.transform.DOMoveY(y1Original - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                    .OnComplete(() =>
+                                    {
+                                        targetBlockSlot.transform.DOMoveY(y1Original, TIME_DISTANCE_MOVE).SetEase(ease);
+
+                                    });
+                            });
                         });
+
 
                     float x = 0;
                     for (int i = posX + 1; i < gridManager.rows; i++)
@@ -751,7 +858,8 @@ public class TileSlot : MonoBehaviour
                         boxColorCollider.enabled = false;
                         listBox.Add(boxColorCollider);
 
-                        float yOriginal = blockSlot.transform.position.y;
+                        //float yOriginal = blockSlot.transform.position.y;
+                        float yOriginal = tileSlot.transform.position.y;
 
                         DOVirtual.DelayedCall(TIME_DISTANCE_MOVE + x, () =>
                         {
@@ -979,12 +1087,24 @@ public class TileSlot : MonoBehaviour
 
             GameObject away = this.container;
 
+            away.GetComponent<TrailRenderer>().enabled = true;
 
-            away.transform.DOMoveX(-floatEnd, duration, false).SetEase(ease).OnComplete(() =>
-            {
+            float scale = away.transform.localScale.x;
 
-                Destroy(away.gameObject);
-            });
+            away.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
+                .OnComplete(() =>
+                {
+                    away.transform.DOScale(scale, timeScaleBlock)
+                    .OnComplete(() =>
+                     {
+                         away.transform.DOMoveX(-floatEnd, duration, false).SetEase(ease).OnComplete(() =>
+                         {
+
+                             Destroy(away.gameObject);
+                         });
+                     });
+                });
+
 
         }
         else
@@ -994,6 +1114,7 @@ public class TileSlot : MonoBehaviour
                 List<BoxCollider2D> listBox = new List<BoxCollider2D>();
                 GameObject targetTileSlot = gridManager.GetTileSlot(rowPos, posY);
                 GameObject colorTileSlot = gridManager.GetTileSlot(rowPos, posY - 1);
+
                 if (isNextTo && !isBoom && !isSaw)
                 {
                     SpriteRenderer colorTileSlotSprite = colorTileSlot.transform.GetChild(0).GetComponent<SpriteRenderer>();
@@ -1010,12 +1131,24 @@ public class TileSlot : MonoBehaviour
                     boxCollider.enabled = false;
                     listBox.Add(boxCollider);
 
-                    float y1Original = targetBlockSlot.transform.position.x;
-                    targetBlockSlot.transform.DOMoveX(y1Original - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                    float scale = targetBlockSlot.transform.localScale.x;
+
+                    targetBlockSlot.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
                         .OnComplete(() =>
                         {
-                            targetBlockSlot.transform.DOMoveX(y1Original, TIME_DISTANCE_MOVE).SetEase(ease);
+                            targetBlockSlot.transform.DOScale(scale, timeScaleBlock)
+                            .OnComplete(() =>
+                            {
+                                float y1Original = targetTileSlot.transform.position.x;
 
+
+                                targetBlockSlot.transform.DOMoveX(y1Original - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                    .OnComplete(() =>
+                                    {
+                                        targetBlockSlot.transform.DOMoveX(y1Original, TIME_DISTANCE_MOVE).SetEase(ease);
+
+                                    });
+                            });
                         });
 
                     float x = 0;
@@ -1038,7 +1171,8 @@ public class TileSlot : MonoBehaviour
                         boxColorCollider.enabled = false;
                         listBox.Add(boxColorCollider);
 
-                        float yOriginal = blockSlot.transform.position.x;
+                        //float yOriginal = blockSlot.transform.position.x;
+                        float yOriginal = tileSlot.transform.position.x;
 
                         DOVirtual.DelayedCall(TIME_DISTANCE_MOVE + x, () =>
                         {
@@ -1265,11 +1399,24 @@ public class TileSlot : MonoBehaviour
 
             GameObject away = this.container;
 
-            away.transform.DOMoveX(floatEnd, duration, false).SetEase(ease).OnComplete(() =>
-            {
+            away.GetComponent<TrailRenderer>().enabled = true;
 
-                Destroy(away.gameObject);
-            });
+            float scale = away.transform.localScale.x;
+
+            away.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
+                .OnComplete(() =>
+                {
+                    away.transform.DOScale(scale, timeScaleBlock)
+                    .OnComplete(() =>
+                    {
+                        away.transform.DOMoveX(floatEnd, duration, false).SetEase(ease).OnComplete(() =>
+                        {
+
+                            Destroy(away.gameObject);
+                        });
+                    });
+                });
+
         }
 
         else
@@ -1295,12 +1442,24 @@ public class TileSlot : MonoBehaviour
                     boxCollider.enabled = false;
                     listBox.Add(boxCollider);
 
-                    float y1Original = targetBlockSlot.transform.position.x;
-                    targetBlockSlot.transform.DOMoveX(y1Original + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                    float scale = targetBlockSlot.transform.localScale.x;
+
+                    targetBlockSlot.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
                         .OnComplete(() =>
                         {
-                            targetBlockSlot.transform.DOMoveX(y1Original, TIME_DISTANCE_MOVE).SetEase(ease);
+                            targetBlockSlot.transform.DOScale(scale, timeScaleBlock)
+                            .OnComplete(() =>
+                            {
+                                float y1Original = targetTileSlot.transform.position.x;
+
+                                targetBlockSlot.transform.DOMoveX(y1Original + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                    .OnComplete(() =>
+                                    {
+                                        targetBlockSlot.transform.DOMoveX(y1Original, TIME_DISTANCE_MOVE).SetEase(ease);
+                                    });
+                            });
                         });
+
 
                     float x = 0;
                     for (int i = posY + 1; i < gridManager.cols; i++)
@@ -1323,7 +1482,9 @@ public class TileSlot : MonoBehaviour
                         boxColorCollider.enabled = false;
                         listBox.Add(boxColorCollider);
 
-                        float yOriginal = blockSlot.transform.position.x;
+
+                        //float yOriginal = blockSlot.transform.position.x;
+                        float yOriginal = tileSlot.transform.position.x;
 
                         DOVirtual.DelayedCall(TIME_DISTANCE_MOVE + x, () =>
                         {
@@ -1824,7 +1985,7 @@ public class TileSlot : MonoBehaviour
                 {
                     CheckChildrenOfRotation(prefab.GetComponent<TileSlot>());
 
-                    if (prefab.transform.GetChild(0).childCount != 0 )
+                    if (prefab.transform.GetChild(0).childCount != 0)
                     {
                         GameManager.Instance.currentGrid.listItem.RemoveAt(GameManager.Instance.currentGrid.listItem.IndexOf(prefab.transform.GetChild(0).GetComponentInChildren<Item>().gameObject));
                     }
@@ -1927,6 +2088,11 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
+
+
                             check = false;
                             break;
                         }
@@ -1985,6 +2151,10 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
+
                             check = false;
                             break;
                         }
@@ -2043,6 +2213,9 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
+
                             check = false;
                             break;
                         }
@@ -2101,6 +2274,9 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
+
                             check = false;
                             break;
                         }
@@ -2128,7 +2304,7 @@ public class TileSlot : MonoBehaviour
             return 90;
         }
 
-        // ------------------------------------------------------------------- Check 180 degre -------------------------------------------------------
+        // ------------------------------------------------------------------- Check 180 degree -------------------------------------------------------
 
         if (haveUp)
         {
@@ -2169,6 +2345,8 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
                             check = false;
                             break;
                         }
@@ -2227,6 +2405,8 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
                             check = false;
                             break;
                         }
@@ -2285,6 +2465,8 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
                             check = false;
                             break;
                         }
@@ -2343,6 +2525,8 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
                             check = false;
                             break;
                         }
@@ -2408,6 +2592,8 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
                             check = false;
                             break;
                         }
@@ -2466,6 +2652,8 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
                             check = false;
                             break;
                         }
@@ -2524,6 +2712,8 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
                             check = false;
                             break;
                         }
@@ -2582,6 +2772,8 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
+                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+
                             check = false;
                             break;
                         }
@@ -2625,8 +2817,31 @@ public class TileSlot : MonoBehaviour
     {
         if (degree == 0)
         {
+
+            if (GameManager.Instance.currentGrid.blockedTile != null)
+            {
+                Item targetItem = GameManager.Instance.currentGrid.blockedTile.transform.parent.GetComponentInChildren<Item>();
+
+                if (targetItem.type != item.rotate)
+                {
+                    targetItem.transform.parent.GetComponent<SpriteRenderer>().color = new Color(1, 0, 0, 1);
+                    GameManager.Instance.state = GameManager.State.Pause;
+
+                    DOVirtual.DelayedCall(GameManager.Instance.timeCountDown, () =>
+                    {
+                        AudioManager.Instance.sfxSource2.pitch = 1;
+                        GameManager.Instance.combo = 0;
+                        GameManager.Instance.state = GameManager.State.Play;
+                        targetItem.transform.parent.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
+                        GameManager.Instance.currentGrid.blockedTile = null;
+                    });
+                }
+            }
+
             return;
         }
+
+        GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].checkRotation = true;
 
         List<Item> upItems = dictionary["Up"];
         List<Item> rightItems = dictionary["Right"];
@@ -3085,7 +3300,6 @@ public class TileSlot : MonoBehaviour
 
         while (angle < anglePoint)
         {
-            angle += Time.deltaTime * speedRotate;
 
             Vector3 newPos = centerPos + Quaternion.Euler(0, 0, -angle) * offset;
 
@@ -3093,6 +3307,9 @@ public class TileSlot : MonoBehaviour
 
 
             block.GetComponentInChildren<LineRenderer>().SetPosition(0, block.transform.position);
+
+            angle += Time.deltaTime * speedRotate;
+
 
             yield return null;
         }
@@ -3187,10 +3404,36 @@ public class TileSlot : MonoBehaviour
             if (isOver == true)
             {
                 GameManager.Instance.state = GameManager.State.Pause;
-                DOVirtual.DelayedCall(TIME_WAIT_WIN, () =>
+
+                GridManager gridCurrent = GameManager.Instance.currentGrid;
+
+                float time = 0f;
+
+                for (int i = 0; i < gridCurrent.listItem.Count; i++)
                 {
+                    SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
+                    DOVirtual.DelayedCall(time, () =>
+                    {
+                        spriteRenderer.color = new Color(1, 0, 0, 1);
+                    });
+
+                    DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown, () =>
+                    {
+                        spriteRenderer.color = new Color(1, 1, 1, 1);
+
+                    });
+
+                    time += GameManager.Instance.timeCountDown;
+
+                }
+
+                DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown * 2, () =>
+                {
+                    AudioManager.Instance.sfxSource2.pitch = 1;
+                    GameManager.Instance.combo = 0;
                     PopupController.Instance.TurnOnPopupLose();
                 });
+
             }
 
             else
