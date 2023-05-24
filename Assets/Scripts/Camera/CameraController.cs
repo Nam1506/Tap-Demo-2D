@@ -12,8 +12,6 @@ public class CameraController : MonoBehaviour
     [SerializeField] RectTransform panelBot;
     [SerializeField] Canvas canva;
 
-    public float sizeCell;
-
     private void Awake()
     {
         Instance = this;
@@ -76,10 +74,19 @@ public class CameraController : MonoBehaviour
         float heightSize = screenHeight / maxVerticalSize;
         float cellSize = Mathf.Min(widthSize, heightSize);
 
+        float size;
 
-        float orthographicSize = 10 * (2.56f / cellSize);
+        if (GameManager.Instance.isSceneGame())
+        {
+            size = 1.6f;
+        }
+        else
+        {
+            size = 2.56f;
+        }
 
-        sizeCell = 2.56f / cellSize;
+        float orthographicSize = 10 * (size / cellSize);
+
 
         if (orthographicSize > 10)
         {

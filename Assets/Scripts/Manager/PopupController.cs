@@ -223,29 +223,46 @@ public class PopupController : MonoBehaviour
         foreach (GameObject coinPre in listCoin)
         {
             coinPre.transform.position = new Vector3(coinPre.transform.position.x, coinPre.transform.position.y, targetJump.z);
-            coinPre.transform.DOScale(2f, 0.1f).SetEase(Ease.OutBack);
+            coinPre.transform.DOScale(1.5f, 0.1f).SetEase(Ease.OutBack);
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.05f);
         }
 
+        yield return new WaitForSeconds(0.05f);
+
+        float time = 0f;
+
+        float waitTime = 0.35f;
 
         foreach(GameObject coinPre in listCoin)
         {
-            coinPre.transform.DOJump(targetJump, jumpPower, 1, durationJump);
-            coinPre.transform.DOScale(0f, durationJump);
+            Debug.Log("time: " + time);
+            Debug.Log("Add " + (time + durationJump + 0.1f));
 
-            DOVirtual.DelayedCall(durationJump + 0.1f, () =>
+
+            DOVirtual.DelayedCall(time, () =>
+            {
+                coinPre.transform.DOJump(targetJump, jumpPower, 1, durationJump);
+                coinPre.transform.DOScale(0.5f, durationJump);
+            });
+
+
+            DOVirtual.DelayedCall(time + durationJump + 0.1f, () =>
             {
                 Destroy(coinPre.gameObject);
             });
+
+            time += 0.05f;
+                
         }
 
+        Debug.Log("addcoin: " + addCoin);
 
         while (currentCoin < targetCoin)
         {
             currentCoin++;
             coin.text = currentCoin.ToString();
-            yield return new WaitForSeconds(timeCoin);
+            yield return new WaitForSeconds( (waitTime + durationJump) / addCoin);
         }
 
 

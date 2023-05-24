@@ -30,9 +30,9 @@ public class GridManager : MonoBehaviour
     public GameObject blockedTile;
 
     public bool haveSaw;
-
-
     public string moveCount;
+
+    public GameObject breakPrefab;
 
     [SerializeField] float TIME_FADE_HIDDEN;
     [SerializeField] TextMeshProUGUI moveText;

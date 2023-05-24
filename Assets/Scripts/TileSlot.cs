@@ -42,7 +42,7 @@ public class TileSlot : MonoBehaviour
     private const float TIME_BREAK = 0.15f;
     private const float TIME_COLOR = 0.25f;
     private const float DISTANCE_MOVE = 0.1f;
-    private const float TIME_DISTANCE_MOVE = 0.1f;
+    private const float TIME_DISTANCE_MOVE = 0.05f;
     private const float TIME_WAIT_WIN = 1f;
     private const float TIME_WAIT_FADE_GRID = 0.5f;
     private const float TIME_FADE_GRID = 0.5f;
@@ -184,6 +184,8 @@ public class TileSlot : MonoBehaviour
 
                         float time = 0f;
 
+                        float duration = GameManager.Instance.timeCountDown / gridCurrent.listItem.Count;
+
                         for (int i = 0; i < gridCurrent.listItem.Count; i++)
                         {
                             SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
@@ -192,17 +194,17 @@ public class TileSlot : MonoBehaviour
                                 spriteRenderer.color = new Color(1, 0, 0, 1);
                             });
 
-                            DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown, () =>
+                            DOVirtual.DelayedCall(duration + time, () =>
                             {
                                 spriteRenderer.color = new Color(1, 1, 1, 1);
 
                             });
 
-                            time += GameManager.Instance.timeCountDown;
+                            time += duration;
 
                         }
 
-                        DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown * 2, () =>
+                        DOVirtual.DelayedCall(time + duration * 2, () =>
                         {
                             AudioManager.Instance.sfxSource2.pitch = 1;
                             GameManager.Instance.combo = 0;
@@ -210,12 +212,6 @@ public class TileSlot : MonoBehaviour
                         });
                     }
 
-                    DOVirtual.DelayedCall(1f, () =>
-                    {
-                        AudioManager.Instance.sfxSource2.pitch = 1;
-                        GameManager.Instance.combo = 0;
-                        PopupController.Instance.TurnOnPopupLose();
-                    });
                 }
             });
         }
@@ -226,7 +222,6 @@ public class TileSlot : MonoBehaviour
 
             DOVirtual.DelayedCall(0.1f, () =>
             {
-                Debug.Log("isOver1: " + isOver);
 
                 if (isOver == true)
                 {
@@ -236,26 +231,27 @@ public class TileSlot : MonoBehaviour
 
                     float time = 0f;
 
+                    float duration = GameManager.Instance.timeCountDown / gridCurrent.listItem.Count;
+
                     for (int i = 0; i < gridCurrent.listItem.Count; i++)
                     {
-                        Debug.Log("hello");
                         SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
                         DOVirtual.DelayedCall(time, () =>
                         {
                             spriteRenderer.color = new Color(1, 0, 0, 1);
                         });
 
-                        DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown, () =>
+                        DOVirtual.DelayedCall((time + duration), () =>
                         {
                             spriteRenderer.color = new Color(1, 1, 1, 1);
 
                         });
 
-                        time += GameManager.Instance.timeCountDown;
+                        time += duration;
 
                     }
 
-                    DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown * 2, () =>
+                    DOVirtual.DelayedCall(time + duration * 2, () =>
                     {
                         AudioManager.Instance.sfxSource2.pitch = 1;
                         GameManager.Instance.combo = 0;
@@ -469,11 +465,11 @@ public class TileSlot : MonoBehaviour
                     away.transform.DOScale(scale, timeScaleBlock)
                     .OnComplete(() =>
                     {
-                         away.transform.DOMoveY(floatEnd, duration, false).SetEase(ease)
-                            .OnComplete(() =>
-                            {
-                                Destroy(away.gameObject);
-                            });
+                        away.transform.DOMoveY(floatEnd, duration, false).SetEase(ease)
+                           .OnComplete(() =>
+                           {
+                               Destroy(away.gameObject);
+                           });
                     });
                 });
 
@@ -575,7 +571,6 @@ public class TileSlot : MonoBehaviour
                 {
                     CheckChildrenOfRotation(this);
 
-
                     this.container.transform.SetParent(targetTileSlot.transform);
 
                     var floatEnd = targetTileSlot.transform.position.y;
@@ -586,7 +581,6 @@ public class TileSlot : MonoBehaviour
                     target.boxTileSlot.enabled = false;
 
                     TileSlot beside = gridManager.GetTileSlot(posX - 1, colPos).GetComponent<TileSlot>();
-
 
                     if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
                     {
@@ -650,11 +644,19 @@ public class TileSlot : MonoBehaviour
 
                             GameObject away = this.container;
 
-                            away.GetComponent<SpriteRenderer>().DOFade(0f, TIME_BREAK)
-                            .OnComplete(() =>
-                            {
+                            Destroy(away.gameObject);
 
-                                Destroy(away.gameObject);
+                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                            float timeBreak = main.duration;
+
+                            DOVirtual.DelayedCall(timeBreak, () =>
+                            {
+                                Destroy(breakPre.gameObject);
                             });
 
                         }
@@ -668,11 +670,19 @@ public class TileSlot : MonoBehaviour
 
                                 GameObject away = this.container;
 
-                                away.GetComponent<SpriteRenderer>().DOFade(0f, TIME_BREAK)
-                                .OnComplete(() =>
-                                {
+                                Destroy(away.gameObject);
 
-                                    Destroy(away.gameObject);
+                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                float timeBreak = main.duration;
+
+                                DOVirtual.DelayedCall(timeBreak, () =>
+                                {
+                                    Destroy(breakPre.gameObject);
                                 });
 
 
@@ -685,6 +695,15 @@ public class TileSlot : MonoBehaviour
                     {
                         if (isNextTo)
                         {
+
+                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                            DOVirtual.DelayedCall(1f, () =>
+                            {
+                                Destroy(explosionPre.gameObject);
+                            });
+
                             Explosion(posX - 1, colPos);
                         }
 
@@ -692,6 +711,14 @@ public class TileSlot : MonoBehaviour
                         {
                             DOVirtual.DelayedCall(duration, () =>
                             {
+                                GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                explosionPre.transform.position = colorTileSlot.transform.position;
+
+                                DOVirtual.DelayedCall(1f, () =>
+                                {
+                                    Destroy(explosionPre.gameObject);
+                                });
+
                                 Explosion(posX - 1, colPos);
                             });
                         }
@@ -902,6 +929,7 @@ public class TileSlot : MonoBehaviour
 
                     if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
                     {
+
                         this.container.transform.DOMoveY(floatEnd, duration).SetEase(ease)
                        .OnComplete(() =>
                        {
@@ -961,12 +989,19 @@ public class TileSlot : MonoBehaviour
 
                             GameObject away = this.container;
 
+                            Destroy(away.gameObject);
 
-                            away.GetComponent<SpriteRenderer>().DOFade(0f, 0.25f)
-                            .OnComplete(() =>
+                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                            float timeBreak = main.duration;
+
+                            DOVirtual.DelayedCall(timeBreak, () =>
                             {
-
-                                Destroy(away.gameObject);
+                                Destroy(breakPre.gameObject);
                             });
 
                         }
@@ -980,12 +1015,19 @@ public class TileSlot : MonoBehaviour
 
                                 GameObject away = this.container;
 
+                                Destroy(away.gameObject);
 
-                                away.GetComponent<SpriteRenderer>().DOFade(0f, TIME_BREAK)
-                                .OnComplete(() =>
+                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                float timeBreak = main.duration;
+
+                                DOVirtual.DelayedCall(timeBreak, () =>
                                 {
-
-                                    Destroy(away.gameObject);
+                                    Destroy(breakPre.gameObject);
                                 });
 
 
@@ -999,11 +1041,27 @@ public class TileSlot : MonoBehaviour
                     {
                         if (isNextTo)
                         {
+                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                            DOVirtual.DelayedCall(1f, () =>
+                            {
+                                Destroy(explosionPre.gameObject);
+                            });
+
                             Explosion(posX + 1, colPos);
                         }
 
                         else
                         {
+                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                            DOVirtual.DelayedCall(1f, () =>
+                            {
+                                Destroy(explosionPre.gameObject);
+                            });
+
                             DOVirtual.DelayedCall(duration, () =>
                             {
                                 Explosion(posX + 1, colPos);
@@ -1273,12 +1331,19 @@ public class TileSlot : MonoBehaviour
 
                             GameObject away = this.container;
 
+                            Destroy(away.gameObject);
 
-                            away.GetComponent<SpriteRenderer>().DOFade(0f, 0.25f)
-                            .OnComplete(() =>
+                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                            float timeBreak = main.duration;
+
+                            DOVirtual.DelayedCall(timeBreak, () =>
                             {
-
-                                Destroy(away.gameObject);
+                                Destroy(breakPre.gameObject);
                             });
 
                         }
@@ -1292,11 +1357,19 @@ public class TileSlot : MonoBehaviour
 
                                 GameObject away = this.container;
 
-                                this.container.GetComponent<SpriteRenderer>().DOFade(0f, TIME_BREAK)
-                                .OnComplete(() =>
-                                {
+                                Destroy(away.gameObject);
 
-                                    Destroy(away.gameObject);
+                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                float timeBreak = main.duration;
+
+                                DOVirtual.DelayedCall(timeBreak, () =>
+                                {
+                                    Destroy(breakPre.gameObject);
                                 });
                             });
 
@@ -1308,11 +1381,27 @@ public class TileSlot : MonoBehaviour
                     {
                         if (isNextTo)
                         {
+                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                            DOVirtual.DelayedCall(1f, () =>
+                            {
+                                Destroy(explosionPre.gameObject);
+                            });
+
                             Explosion(rowPos, posY - 1);
                         }
 
                         else
                         {
+                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                            DOVirtual.DelayedCall(1f, () =>
+                            {
+                                Destroy(explosionPre.gameObject);
+                            });
+
                             DOVirtual.DelayedCall(duration, () =>
                             {
                                 Explosion(rowPos, posY - 1);
@@ -1586,11 +1675,19 @@ public class TileSlot : MonoBehaviour
 
                             GameObject away = this.container;
 
-                            away.GetComponent<SpriteRenderer>().DOFade(0f, 0.25f)
-                            .OnComplete(() =>
-                            {
+                            Destroy(away.gameObject);
 
-                                Destroy(away.gameObject);
+                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                            float timeBreak = main.duration;
+
+                            DOVirtual.DelayedCall(timeBreak, () =>
+                            {
+                                Destroy(breakPre.gameObject);
                             });
 
 
@@ -1604,13 +1701,21 @@ public class TileSlot : MonoBehaviour
 
                                 GameObject away = this.container;
 
+                                Destroy(away.gameObject);
 
-                                away.GetComponent<SpriteRenderer>().DOFade(0f, TIME_BREAK)
-                                .OnComplete(() =>
+                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                float timeBreak = main.duration;
+
+                                DOVirtual.DelayedCall(timeBreak, () =>
                                 {
-
-                                    Destroy(away.gameObject);
+                                    Destroy(breakPre.gameObject);
                                 });
+
                             });
 
 
@@ -1621,11 +1726,27 @@ public class TileSlot : MonoBehaviour
                     {
                         if (isNextTo)
                         {
+                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                            DOVirtual.DelayedCall(1f, () =>
+                            {
+                                Destroy(explosionPre.gameObject);
+                            });
+
                             Explosion(rowPos, posY + 1);
                         }
 
                         else
                         {
+                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                            DOVirtual.DelayedCall(1f, () =>
+                            {
+                                Destroy(explosionPre.gameObject);
+                            });
+
                             DOVirtual.DelayedCall(duration, () =>
                             {
                                 Explosion(rowPos, posY + 1);
@@ -2005,15 +2126,108 @@ public class TileSlot : MonoBehaviour
                                 transform.GetComponentInChildren<TextMeshProUGUI>().text = "";
                             }
 
-                            transform.GetComponent<SpriteRenderer>().DOFade(0, 0.25f).OnComplete(() =>
-                            {
                                 Destroy(transform.gameObject);
-                            });
                         }
                     });
 
 
                 }
+            }
+        }
+        bool isOver = GameManager.Instance.currentGrid.CheckLoseGame();
+
+        DOVirtual.DelayedCall(0.1f, () =>
+        {
+
+            if (isOver == true)
+            {
+                GameManager.Instance.state = GameManager.State.Pause;
+
+                GridManager gridCurrent = GameManager.Instance.currentGrid;
+
+                float time = 0f;
+
+                float duration = GameManager.Instance.timeCountDown / gridCurrent.listItem.Count;
+
+                for (int i = 0; i < gridCurrent.listItem.Count; i++)
+                {
+                    SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
+                    DOVirtual.DelayedCall(time, () =>
+                    {
+                        spriteRenderer.color = new Color(1, 0, 0, 1);
+                    });
+
+                    DOVirtual.DelayedCall((time + duration), () =>
+                    {
+                        spriteRenderer.color = new Color(1, 1, 1, 1);
+
+                    });
+
+                    time += duration;
+
+                }
+
+                DOVirtual.DelayedCall(time + duration * 2, () =>
+                {
+                    AudioManager.Instance.sfxSource2.pitch = 1;
+                    GameManager.Instance.combo = 0;
+                    PopupController.Instance.TurnOnPopupLose();
+                });
+            }
+        });
+
+        if (isOver == false)
+        {
+            if (GameManager.Instance.currentGrid.listItem.Count == 0)
+            {
+
+                GameManager.Instance.state = GameManager.State.Pause;
+
+                int index = GameManager.Instance.currentIndexGrid;
+
+                if (index == GameManager.Instance.listGrid.Count - 1)
+                {
+                    DOVirtual.DelayedCall(TIME_WAIT_WIN, () =>
+                    {
+                        AudioManager.Instance.sfxSource2.pitch = 1;
+                        GameManager.Instance.combo = 0;
+
+                        PopupController.Instance.TurnOnPopupWin();
+                    });
+                    return;
+                }
+
+                DOVirtual.DelayedCall(TIME_WAIT_FADE_GRID, () =>
+                {
+                    foreach (SpriteRenderer spritePrefab in GameManager.Instance.listGrid[index].GetComponentsInChildren<SpriteRenderer>())
+                    {
+                        spritePrefab.DOFade(0f, TIME_FADE_GRID)
+                            .OnComplete(() =>
+                            {
+                                AudioManager.Instance.sfxSource2.pitch = 1;
+                                GameManager.Instance.combo = 0;
+
+                                GameManager.Instance.state = GameManager.State.Play;
+                                GameManager.Instance.listGrid[index].gameObject.SetActive(false);
+                            });
+                    }
+
+                });
+
+                DOVirtual.DelayedCall(TIME_WAIT_FADE_GRID + TIME_WAIT_FADE_GRID, () =>
+                {
+                    GameManager.Instance.currentIndexGrid++;
+                    GameManager.Instance.currentGrid = GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid];
+                    Debug.Log("moveCount: " + GameManager.Instance.currentGrid.moveCount);
+                    GameManager.Instance.moveText.text = GameManager.Instance.currentGrid.moveCount + " Moves";
+
+                    foreach (GameObject slot in GameManager.Instance.currentGrid.slots)
+                    {
+                        slot.GetComponent<BoxCollider2D>().enabled = true;
+                    }
+                });
+
+
             }
         }
     }
@@ -3332,15 +3546,35 @@ public class TileSlot : MonoBehaviour
 
         if (block.GetComponent<Item>() != null)
         {
+            bool checkBreak = false;
+
             foreach (Transform transform in targetSlot.transform)
             {
                 if (targetSlot.transform.childCount != 0)
                 {
                     Item temp = targetSlot.GetComponentInChildren<Item>();
                     GameManager.Instance.currentGrid.listItem.Remove(temp.gameObject);
+                    checkBreak = true;
                 }
 
                 Destroy(transform.gameObject);
+            }
+
+            if (checkBreak)
+            {
+
+                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                breakPre.transform.position = new Vector3(targetSlot.transform.position.x, targetSlot.transform.position.y, targetSlot.transform.position.z);
+
+                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                float timeBreak = main.duration;
+
+                DOVirtual.DelayedCall(timeBreak, () =>
+                {
+                    Destroy(breakPre.gameObject);
+                });
             }
 
         }
@@ -3381,6 +3615,19 @@ public class TileSlot : MonoBehaviour
                         }
                     });
 
+                    GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                    breakPre.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z);
+
+                    ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                    float timeBreak = main.duration;
+
+                    DOVirtual.DelayedCall(timeBreak, () =>
+                    {
+                        Destroy(breakPre.gameObject);
+                    });
+
                     Destroy(block.gameObject);
 
                 }
@@ -3409,6 +3656,8 @@ public class TileSlot : MonoBehaviour
 
                 float time = 0f;
 
+                float duration = GameManager.Instance.timeCountDown / gridCurrent.listItem.Count;
+
                 for (int i = 0; i < gridCurrent.listItem.Count; i++)
                 {
                     SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
@@ -3417,17 +3666,17 @@ public class TileSlot : MonoBehaviour
                         spriteRenderer.color = new Color(1, 0, 0, 1);
                     });
 
-                    DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown, () =>
+                    DOVirtual.DelayedCall(time + duration, () =>
                     {
                         spriteRenderer.color = new Color(1, 1, 1, 1);
 
                     });
 
-                    time += GameManager.Instance.timeCountDown;
+                    time += duration;
 
                 }
 
-                DOVirtual.DelayedCall(time + GameManager.Instance.timeCountDown * 2, () =>
+                DOVirtual.DelayedCall(time + duration * 2, () =>
                 {
                     AudioManager.Instance.sfxSource2.pitch = 1;
                     GameManager.Instance.combo = 0;

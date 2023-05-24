@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
+using Unity.VisualScripting;
 
 public class JSONSystem : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public class JSONSystem : MonoBehaviour
     public int cols;
 
     public string gameScene = "Game";
+
+    private const int levelMax = 12;
 
     private void Awake()
     {
@@ -189,6 +192,12 @@ public class JSONSystem : MonoBehaviour
 
         int level = number;
 
+        if(level > levelMax)
+        {
+            int randomNum = Random.Range(levelMax - 5, levelMax + 1);
+            level = randomNum;
+        }
+
         string path = Resources.Load<TextAsset>("Levels/Level" + level).ToString();
 
         Data data = JsonConvert.DeserializeObject<Data>(path);
@@ -232,6 +241,11 @@ public class JSONSystem : MonoBehaviour
             GameManager.Instance.listGrid.Add(grid);
             GameManager.Instance.currentGrid = GameManager.Instance.listGrid[0];
             GameManager.Instance.currentIndexGrid = 0;
+
+            if (GameManager.Instance.isSceneGame())
+            {
+                grid.breakPrefab = GameManager.Instance.listBreakPrefab[data.color];
+            }
 
             grid.moveCount = map.move_count.ToString();
 
@@ -453,6 +467,17 @@ public class JSONSystem : MonoBehaviour
             }
         }
 
+
+        float cameraSize = 10f;
+
+        foreach (GridManager grid in GameManager.Instance.listGrid)
+        {
+            CameraController.Instance.SetCameraOrthographic(grid);
+            cameraSize = Mathf.Max(cameraSize, Camera.main.orthographicSize);
+        }
+
+        Camera.main.orthographicSize = cameraSize;
+
         if (!GameManager.Instance.isSceneGame())
         {
             for (int i = 1; i < GameManager.Instance.listGrid.Count; i++)
@@ -460,8 +485,10 @@ public class JSONSystem : MonoBehaviour
                 GameManager.Instance.listGrid[i].gameObject.SetActive(false);
             }
         }
+
         else
         {
+
             for (int i = 0; i < GameManager.Instance.listGrid.Count; i++)
             {
 
@@ -521,6 +548,5 @@ public class JSONSystem : MonoBehaviour
 
         }
 
-        Camera.main.orthographicSize = data.maxCamera;
     }
 }

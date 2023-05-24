@@ -45,6 +45,9 @@ public class GameManager : MonoBehaviour
 
     public int combo = 0;
 
+    public List<GameObject> listBreakPrefab;
+    public GameObject explosionPrefab;
+
 
     private void Awake()
     {
@@ -155,8 +158,6 @@ public class GameManager : MonoBehaviour
         GridManager.Instance.GenerateGrid(currentGrid);
 
         CameraController.Instance.SetCameraOrthographic(currentGrid);
-
-        maxCamera = Mathf.Max(maxCamera, Camera.main.orthographicSize);
 
     }
 
@@ -318,7 +319,6 @@ public class GameManager : MonoBehaviour
 
         curCountGrid.text = "0";
         maxCountGrid.text = "0";
-        maxCamera = 10f;
 
         int fileCount = 0;
 
@@ -326,16 +326,12 @@ public class GameManager : MonoBehaviour
 
         string folderPath = Application.dataPath + "/Resources/Levels";
         fileCount = Directory.GetFiles(folderPath).Length;
-        Debug.Log("fileCount: " + fileCount);
         fileCount = (fileCount) / 2;
-        Debug.Log("fileCount: " + fileCount);
 
 #else
         string folderPath = "Tap Demo_Data/Resources/Levels";
         fileCount = Directory.GetFiles(folderPath).Length;
 #endif
-
-        Debug.Log("fileCount: " + fileCount);
         levelInputField.text = (fileCount + 1).ToString();
         listGrid.Clear();
     }

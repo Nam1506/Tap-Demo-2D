@@ -4812,7 +4812,6 @@ MonoBehaviour:
   panelTop: {fileID: 687988833}
   panelBot: {fileID: 1794744519}
   canva: {fileID: 1093149290}
-  sizeCell: 0
 --- !u!1 &524020625
 GameObject:
   m_ObjectHideFlags: 0
@@ -8016,9 +8015,15 @@ MonoBehaviour:
   isRotating: 0
   currentIndexGrid: -1
   maxCamera: 10
-  timeCountDown: 0.15
+  timeCountDown: 2
   currentGrid: {fileID: 0}
   combo: 0
+  listBreakPrefab:
+  - {fileID: 5672528047411757377, guid: 94a2a2158a11aef40a744d0d5e034f0d, type: 3}
+  - {fileID: 4690558422457070057, guid: e20998f9173810442bae6f205e8272cd, type: 3}
+  - {fileID: 2863006966984331333, guid: 95b7d50bb9d75f440be6459f5650a073, type: 3}
+  - {fileID: 4768375728704395718, guid: d341724c597865f4eb0ddbe9003a17b4, type: 3}
+  explosionPrefab: {fileID: 7948799655233085299, guid: d63217e262118db47a30b9b92ec6b120, type: 3}
 --- !u!4 &908730033
 Transform:
   m_ObjectHideFlags: 0
