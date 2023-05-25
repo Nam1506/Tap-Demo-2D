@@ -28,7 +28,7 @@ public class JSONSystem : MonoBehaviour
 
     public string gameScene = "Game";
 
-    private const int levelMax = 12;
+    private const int levelMax = 20;
 
     private void Awake()
     {
@@ -304,7 +304,19 @@ public class JSONSystem : MonoBehaviour
                         {
                             GameObject container = Instantiate(containerPrefab, slot.transform);
 
-                            TrailRenderer trailRenderer = container.GetComponent<TrailRenderer>();
+
+                            item = Instantiate(itemPrefab, container.transform);
+
+                            container.transform.localScale = Vector3.one * 1.7f;
+                            item.transform.localScale = Vector3.one * 1.2f;
+
+                            item.transform.localPosition = new Vector3(0, 0, -0.1f);
+
+                            item.GetComponent<SpriteRenderer>().sprite = grid.sprites[map.grid[i][j]];
+
+                            GameObject trail = Instantiate(GameManager.Instance.trailPrefab, container.transform);
+                            trail.transform.SetAsLastSibling();
+                            TrailRenderer trailRenderer = trail.GetComponent<TrailRenderer>();
 
                             if (data.color == 0)
                             {
@@ -316,7 +328,7 @@ public class JSONSystem : MonoBehaviour
                                 trailRenderer.startColor = HexToRGBA("8DF151");
                                 trailRenderer.endColor = HexToRGBA("61ABFF");
                             }
-                            else if(data.color == 2)
+                            else if (data.color == 2)
                             {
                                 trailRenderer.startColor = HexToRGBA("FC818B");
                                 trailRenderer.endColor = HexToRGBA("E97634");
@@ -327,14 +339,6 @@ public class JSONSystem : MonoBehaviour
                                 trailRenderer.endColor = HexToRGBA("FF5AA3");
                             }
 
-                            item = Instantiate(itemPrefab, container.transform);
-
-                            container.transform.localScale = Vector3.one * 1.7f;
-                            item.transform.localScale = Vector3.one * 1.2f;
-
-                            item.transform.localPosition = new Vector3(0, 0, -0.1f);
-
-                            item.GetComponent<SpriteRenderer>().sprite = grid.sprites[map.grid[i][j]];
                         }
                     }
 
@@ -470,9 +474,11 @@ public class JSONSystem : MonoBehaviour
 
         float cameraSize = 10f;
 
+
         foreach (GridManager grid in GameManager.Instance.listGrid)
         {
             CameraController.Instance.SetCameraOrthographic(grid);
+
             cameraSize = Mathf.Max(cameraSize, Camera.main.orthographicSize);
         }
 

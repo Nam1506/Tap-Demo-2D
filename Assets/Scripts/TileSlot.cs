@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 using Sirenix.OdinInspector;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
+using Unity.VisualScripting;
 
 public class TileSlot : MonoBehaviour
 {
@@ -38,7 +39,9 @@ public class TileSlot : MonoBehaviour
     [SerializeField] float timeScaleBlock;
     [SerializeField] float targetScaleBlock;
 
-    // --------Config--------
+    float durationCheck = 0f;
+
+    // ----------------------------------------Config--------------------------------
     private const float TIME_BREAK = 0.15f;
     private const float TIME_COLOR = 0.25f;
     private const float DISTANCE_MOVE = 0.1f;
@@ -83,6 +86,8 @@ public class TileSlot : MonoBehaviour
         {
             return;
         }
+
+        durationCheck = timeScaleBlock * 2;
 
         container = this.transform.GetChild(0).gameObject;
         item = container.GetComponentInChildren<Item>();
@@ -184,20 +189,19 @@ public class TileSlot : MonoBehaviour
 
                         float time = 0f;
 
-                        float duration = GameManager.Instance.timeCountDown / gridCurrent.listItem.Count;
+                        float duration = GameManager.Instance.timeCountDown;
 
                         for (int i = 0; i < gridCurrent.listItem.Count; i++)
                         {
                             SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
-                            DOVirtual.DelayedCall(time, () =>
-                            {
-                                spriteRenderer.color = new Color(1, 0, 0, 1);
-                            });
 
-                            DOVirtual.DelayedCall(duration + time, () =>
+                            DOVirtual.DelayedCall(time + duration, () =>
                             {
-                                spriteRenderer.color = new Color(1, 1, 1, 1);
-
+                                spriteRenderer.DOColor(new Color(1, 0, 0, 1), duration * 2)
+                                    .OnComplete(() =>
+                                    {
+                                        spriteRenderer.DOColor(new Color(1, 1, 1, 1), duration * 2);
+                                    });
                             });
 
                             time += duration;
@@ -218,10 +222,9 @@ public class TileSlot : MonoBehaviour
 
         if (nameItem != item.rotate)
         {
-            bool isOver = GameManager.Instance.currentGrid.CheckLoseGame();
-
             DOVirtual.DelayedCall(0.1f, () =>
             {
+                bool isOver = GameManager.Instance.currentGrid.CheckLoseGame();
 
                 if (isOver == true)
                 {
@@ -231,25 +234,35 @@ public class TileSlot : MonoBehaviour
 
                     float time = 0f;
 
-                    float duration = GameManager.Instance.timeCountDown / gridCurrent.listItem.Count;
-
-                    for (int i = 0; i < gridCurrent.listItem.Count; i++)
+                    float duration;
+                    if (gridCurrent.listItem.Count != 0)
                     {
-                        SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
-                        DOVirtual.DelayedCall(time, () =>
+                        duration = GameManager.Instance.timeCountDown;
+
+                        for (int i = 0; i < gridCurrent.listItem.Count; i++)
                         {
-                            spriteRenderer.color = new Color(1, 0, 0, 1);
-                        });
+                            SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
 
-                        DOVirtual.DelayedCall((time + duration), () =>
-                        {
-                            spriteRenderer.color = new Color(1, 1, 1, 1);
+                            DOVirtual.DelayedCall(time + duration, () =>
+                            {
+                                spriteRenderer.DOColor(new Color(1, 0, 0, 1), duration * 2)
+                                    .OnComplete(() =>
+                                    {
+                                        spriteRenderer.DOColor(new Color(1, 1, 1, 1), duration * 2);
+                                    });
+                            });
 
-                        });
+                            time += duration;
 
-                        time += duration;
+                        }
 
                     }
+
+                    else
+                    {
+                        duration = 0;
+                    }
+
 
                     DOVirtual.DelayedCall(time + duration * 2, () =>
                     {
@@ -258,64 +271,62 @@ public class TileSlot : MonoBehaviour
                         PopupController.Instance.TurnOnPopupLose();
                     });
                 }
+
+                if (isOver == false)
+                {
+                    if (GameManager.Instance.currentGrid.listItem.Count == 0)
+                    {
+
+                        GameManager.Instance.state = GameManager.State.Pause;
+
+                        int index = GameManager.Instance.currentIndexGrid;
+
+                        if (index == GameManager.Instance.listGrid.Count - 1)
+                        {
+                            DOVirtual.DelayedCall(TIME_WAIT_WIN, () =>
+                            {
+                                AudioManager.Instance.sfxSource2.pitch = 1;
+                                GameManager.Instance.combo = 0;
+
+                                PopupController.Instance.TurnOnPopupWin();
+                            });
+                            return;
+                        }
+
+                        DOVirtual.DelayedCall(TIME_WAIT_FADE_GRID, () =>
+                        {
+                            foreach (SpriteRenderer spritePrefab in GameManager.Instance.listGrid[index].GetComponentsInChildren<SpriteRenderer>())
+                            {
+                                spritePrefab.DOFade(0f, TIME_FADE_GRID)
+                                    .OnComplete(() =>
+                                    {
+                                        AudioManager.Instance.sfxSource2.pitch = 1;
+                                        GameManager.Instance.combo = 0;
+
+                                        GameManager.Instance.state = GameManager.State.Play;
+                                        GameManager.Instance.listGrid[index].gameObject.SetActive(false);
+                                    });
+                            }
+
+                            GameManager.Instance.currentIndexGrid++;
+                            GameManager.Instance.currentGrid = GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid];
+                            Debug.Log("moveCount: " + GameManager.Instance.currentGrid.moveCount);
+                            GameManager.Instance.moveText.text = GameManager.Instance.currentGrid.moveCount + " Moves";
+
+                            foreach (GameObject slot in GameManager.Instance.currentGrid.slots)
+                            {
+                                slot.GetComponent<BoxCollider2D>().enabled = true;
+                            }
+
+                        });
+
+                    }
+                }
+
             });
 
-            if (isOver == false)
-            {
-                if (GameManager.Instance.currentGrid.listItem.Count == 0)
-                {
-
-                    GameManager.Instance.state = GameManager.State.Pause;
-
-                    int index = GameManager.Instance.currentIndexGrid;
-
-                    if (index == GameManager.Instance.listGrid.Count - 1)
-                    {
-                        DOVirtual.DelayedCall(TIME_WAIT_WIN, () =>
-                        {
-                            AudioManager.Instance.sfxSource2.pitch = 1;
-                            GameManager.Instance.combo = 0;
-
-                            PopupController.Instance.TurnOnPopupWin();
-                        });
-                        return;
-                    }
-
-                    DOVirtual.DelayedCall(TIME_WAIT_FADE_GRID, () =>
-                    {
-                        foreach (SpriteRenderer spritePrefab in GameManager.Instance.listGrid[index].GetComponentsInChildren<SpriteRenderer>())
-                        {
-                            spritePrefab.DOFade(0f, TIME_FADE_GRID)
-                                .OnComplete(() =>
-                                {
-                                    AudioManager.Instance.sfxSource2.pitch = 1;
-                                    GameManager.Instance.combo = 0;
-
-                                    GameManager.Instance.state = GameManager.State.Play;
-                                    GameManager.Instance.listGrid[index].gameObject.SetActive(false);
-                                });
-                        }
-
-                    });
-
-                    DOVirtual.DelayedCall(TIME_WAIT_FADE_GRID + TIME_WAIT_FADE_GRID, () =>
-                    {
-                        GameManager.Instance.currentIndexGrid++;
-                        GameManager.Instance.currentGrid = GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid];
-                        Debug.Log("moveCount: " + GameManager.Instance.currentGrid.moveCount);
-                        GameManager.Instance.moveText.text = GameManager.Instance.currentGrid.moveCount + " Moves";
-
-                        foreach (GameObject slot in GameManager.Instance.currentGrid.slots)
-                        {
-                            slot.GetComponent<BoxCollider2D>().enabled = true;
-                        }
-                    });
-
-
-                }
-            }
-
         }
+
 
     }
 
@@ -372,6 +383,7 @@ public class TileSlot : MonoBehaviour
         {
             DOVirtual.DelayedCall(0.1f, () =>
             {
+
                 Vibration.VibratePeek();
             });
         }
@@ -451,11 +463,13 @@ public class TileSlot : MonoBehaviour
             var floatEnd = (Screen.height / 2 + (2.56f * Camera.main.orthographicSize) * 2f) / CameraExtension.PixelsPerUnit(Camera.main);
             duration = Vector2.Distance(this.transform.position, new Vector2(this.transform.position.x, floatEnd)) / speed;
 
+            durationCheck = duration;
+
             this.container.transform.SetParent(transform.root);
 
             GameObject away = this.container;
 
-            away.GetComponent<TrailRenderer>().enabled = true;
+
 
             float scale = away.transform.localScale.x;
 
@@ -517,7 +531,6 @@ public class TileSlot : MonoBehaviour
                             });
                         });
 
-
                     //Other
                     float x = 0;
 
@@ -571,158 +584,174 @@ public class TileSlot : MonoBehaviour
                 {
                     CheckChildrenOfRotation(this);
 
-                    this.container.transform.SetParent(targetTileSlot.transform);
+                    GameObject moveBlock = this.container;
+
+                    if (isSaw)
+                    {
+                        moveBlock.transform.SetParent(transform.root);
+                        int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
+                        GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                    }
+                    else
+                    {
+                        moveBlock.transform.SetParent(targetTileSlot.transform);
+                    }
+
+                    TileSlot target = targetTileSlot.GetComponent<TileSlot>();
+                    target.boxTileSlot.enabled = false;
+
+                    float scale = moveBlock.transform.localScale.x;
 
                     var floatEnd = targetTileSlot.transform.position.y;
 
                     duration = Vector2.Distance(this.transform.position, new Vector2(this.transform.position.x, floatEnd)) / speed;
 
-                    TileSlot target = targetTileSlot.GetComponent<TileSlot>();
-                    target.boxTileSlot.enabled = false;
+                    durationCheck = duration;
 
-                    TileSlot beside = gridManager.GetTileSlot(posX - 1, colPos).GetComponent<TileSlot>();
+                    moveBlock.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
+                        .OnComplete(() =>
+                        {
+                            moveBlock.transform.DOScale(scale, timeScaleBlock)
+                                    .OnComplete(() =>
+                                    {
 
-                    if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
-                    {
-                        this.container.transform.DOMoveY(floatEnd, duration).SetEase(ease)
-                       .OnComplete(() =>
-                       {
+                                        TileSlot beside = gridManager.GetTileSlot(posX - 1, colPos).GetComponent<TileSlot>();
 
-                           BoxCollider2D besideBox = beside.gameObject.GetComponent<BoxCollider2D>();
-
-                           float yOriginal = this.container.transform.position.y;
-                           float yOriginalBeside = beside.transform.position.y;
-
-                           if (beside.transform.childCount != 0)
-                           {
-
-                               this.container.transform.DOMoveY(yOriginal + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
-                                   .OnComplete(() =>
-                                   {
-                                       this.container.transform.DOMoveY(yOriginal, TIME_DISTANCE_MOVE).SetEase(ease)
+                                        if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
+                                        {
+                                            moveBlock.transform.DOMoveY(floatEnd, duration).SetEase(ease)
                                            .OnComplete(() =>
                                            {
-                                               target.boxTileSlot.enabled = true;
+
+                                               BoxCollider2D besideBox = beside.gameObject.GetComponent<BoxCollider2D>();
+
+                                               float yOriginal = moveBlock.transform.position.y;
+                                               float yOriginalBeside = beside.transform.position.y;
+
+                                               if (beside.transform.childCount != 0)
+                                               {
+
+                                                   moveBlock.transform.DOMoveY(yOriginal + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                       .OnComplete(() =>
+                                                       {
+                                                           moveBlock.transform.DOMoveY(yOriginal, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                               .OnComplete(() =>
+                                                               {
+                                                                   target.boxTileSlot.enabled = true;
+                                                               });
+                                                       });
+
+                                                   besideBox.enabled = false;
+
+                                                   beside.transform.DOMoveY(yOriginalBeside + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                   .OnComplete(() =>
+                                                   {
+                                                       beside.transform.DOMoveY(yOriginalBeside, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                           .OnComplete(() =>
+                                                           {
+                                                               besideBox.enabled = true;
+                                                           });
+                                                   });
+                                               }
+                                               else
+                                               {
+                                                   target.boxTileSlot.enabled = true;
+                                               }
+
                                            });
-                                   });
+                                        }
 
-                               besideBox.enabled = false;
-
-                               beside.transform.DOMoveY(yOriginalBeside + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
-                               .OnComplete(() =>
-                               {
-                                   beside.transform.DOMoveY(yOriginalBeside, TIME_DISTANCE_MOVE).SetEase(ease)
-                                       .OnComplete(() =>
-                                       {
-                                           besideBox.enabled = true;
-                                       });
-                               });
-                           }
-                           else
-                           {
-                               target.boxTileSlot.enabled = true;
-                           }
-
-                       });
-                    }
-
-                    else
-                    {
-                        this.container.transform.DOMoveY(floatEnd, duration).SetEase(ease);
-                    }
+                                        else
+                                        {
+                                            moveBlock.transform.DOMoveY(floatEnd, duration).SetEase(ease);
+                                        }
 
 
-                    if (isSaw)
-                    {
-
-                        this.container.transform.SetParent(transform.root);
-
-                        if (isNextTo)
-                        {
-                            int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
-                            GameManager.Instance.currentGrid.listItem.RemoveAt(index);
-
-                            GameObject away = this.container;
-
-                            Destroy(away.gameObject);
-
-                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
-
-                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
-
-                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
-
-                            float timeBreak = main.duration;
-
-                            DOVirtual.DelayedCall(timeBreak, () =>
-                            {
-                                Destroy(breakPre.gameObject);
-                            });
-
-                        }
-
-                        else
-                        {
-                            DOVirtual.DelayedCall(duration, () =>
-                            {
-                                int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
-                                GameManager.Instance.currentGrid.listItem.RemoveAt(index);
-
-                                GameObject away = this.container;
-
-                                Destroy(away.gameObject);
-
-                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
-
-                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
-
-                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
-
-                                float timeBreak = main.duration;
-
-                                DOVirtual.DelayedCall(timeBreak, () =>
-                                {
-                                    Destroy(breakPre.gameObject);
-                                });
+                                        if (isSaw)
+                                        {
 
 
-                            });
-                        }
+                                            if (isNextTo)
+                                            {
 
-                    }
+                                                Destroy(moveBlock.gameObject);
 
-                    if (isBoom)
-                    {
-                        if (isNextTo)
-                        {
+                                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
-                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
-                            explosionPre.transform.position = colorTileSlot.transform.position;
+                                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                            DOVirtual.DelayedCall(1f, () =>
-                            {
-                                Destroy(explosionPre.gameObject);
-                            });
+                                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
 
-                            Explosion(posX - 1, colPos);
-                        }
+                                                float timeBreak = main.duration;
 
-                        else
-                        {
-                            DOVirtual.DelayedCall(duration, () =>
-                            {
-                                GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
-                                explosionPre.transform.position = colorTileSlot.transform.position;
+                                                DOVirtual.DelayedCall(timeBreak, () =>
+                                                {
+                                                    Destroy(breakPre.gameObject);
+                                                });
 
-                                DOVirtual.DelayedCall(1f, () =>
-                                {
-                                    Destroy(explosionPre.gameObject);
-                                });
+                                            }
 
-                                Explosion(posX - 1, colPos);
-                            });
-                        }
-                    }
+                                            else
+                                            {
+                                                DOVirtual.DelayedCall(duration, () =>
+                                                {
+
+                                                    Destroy(moveBlock.gameObject);
+
+                                                    GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                                    breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                                    ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                                    float timeBreak = main.duration;
+
+                                                    DOVirtual.DelayedCall(timeBreak, () =>
+                                                    {
+                                                        Destroy(breakPre.gameObject);
+                                                    });
+
+
+                                                });
+                                            }
+
+                                        }
+
+                                        if (isBoom)
+                                        {
+                                            if (isNextTo)
+                                            {
+
+                                                GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                                explosionPre.transform.position = colorTileSlot.transform.position;
+
+                                                DOVirtual.DelayedCall(1f, () =>
+                                                {
+                                                    Destroy(explosionPre.gameObject);
+                                                });
+
+                                                Explosion(posX - 1, colPos);
+                                            }
+
+                                            else
+                                            {
+                                                DOVirtual.DelayedCall(duration, () =>
+                                                {
+                                                    GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                                    explosionPre.transform.position = colorTileSlot.transform.position;
+                                                    Explosion(posX - 1, colPos);
+
+                                                    DOVirtual.DelayedCall(1f, () =>
+                                                    {
+                                                        Destroy(explosionPre.gameObject);
+
+                                                    });
+                                                });
+                                            }
+                                        }
+                                    });
+                        });
+
                 }
 
             }
@@ -761,7 +790,6 @@ public class TileSlot : MonoBehaviour
                     if (prefab.transform.GetChild(0).GetComponentInChildren<Item>().GetNameSprite() == item.saw)
                     {
                         isSaw = true;
-
                     }
 
                     if (i == rowPos + 1)
@@ -797,9 +825,10 @@ public class TileSlot : MonoBehaviour
 
             duration = Vector2.Distance(this.transform.position, new Vector2(this.transform.position.x, -floatEnd)) / speed;
 
+            durationCheck = duration;
+
             GameObject away = this.container;
 
-            away.GetComponent<TrailRenderer>().enabled = true;
 
             float scale = away.transform.localScale.x;
 
@@ -828,6 +857,7 @@ public class TileSlot : MonoBehaviour
                 List<BoxCollider2D> listBox = new List<BoxCollider2D>();
                 GameObject targetTileSlot = gridManager.GetTileSlot(posX, colPos);
                 GameObject colorTileSlot = gridManager.GetTileSlot(posX + 1, colPos);
+
                 if (isNextTo && !isBoom && !isSaw)
                 {
                     SpriteRenderer colorTileSlotSprite = colorTileSlot.transform.GetChild(0).GetComponent<SpriteRenderer>();
@@ -915,159 +945,174 @@ public class TileSlot : MonoBehaviour
                 {
                     CheckChildrenOfRotation(this);
 
+                    GameObject moveBlock = this.container;
 
-                    this.container.transform.SetParent(gridManager.GetTileSlot(posX, colPos).transform);
+                    if (isSaw)
+                    {
+                        moveBlock.transform.SetParent(transform.root);
+                        int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
+                        GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                    }
+
+                    else
+                    {
+                        moveBlock.transform.SetParent(targetTileSlot.transform);
+                    }
 
                     var floatEnd = gridManager.GetTileSlot(posX, colPos).transform.position.y;
 
                     duration = Vector2.Distance(this.transform.position, new Vector2(this.transform.position.x, floatEnd)) / speed;
 
+                    durationCheck = duration;
+
                     TileSlot target = gridManager.GetTileSlot(posX, colPos).GetComponent<TileSlot>();
                     target.boxTileSlot.enabled = false;
 
-                    TileSlot beside = gridManager.GetTileSlot(posX + 1, colPos).GetComponent<TileSlot>();
+                    float scale = moveBlock.transform.localScale.x;
 
-                    if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
-                    {
+                    moveBlock.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
+                        .OnComplete(() =>
+                        {
+                            moveBlock.transform.DOScale(scale, timeScaleBlock)
+                                .OnComplete(() =>
+                                {
+                                    TileSlot beside = gridManager.GetTileSlot(posX + 1, colPos).GetComponent<TileSlot>();
 
-                        this.container.transform.DOMoveY(floatEnd, duration).SetEase(ease)
-                       .OnComplete(() =>
-                       {
+                                    if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
+                                    {
 
-                           BoxCollider2D besideBox = beside.gameObject.GetComponent<BoxCollider2D>();
-
-                           float yOriginal = this.container.transform.position.y;
-                           float yOriginalBeside = beside.transform.position.y;
-
-                           if (beside.transform.childCount != 0)
-                           {
-
-                               this.container.transform.DOMoveY(yOriginal - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
-                                   .OnComplete(() =>
-                                   {
-                                       this.container.transform.DOMoveY(yOriginal, TIME_DISTANCE_MOVE).SetEase(ease)
-                                           .OnComplete(() =>
-                                           {
-                                               target.boxTileSlot.enabled = true;
-                                           });
-                                   });
-
-                               besideBox.enabled = false;
-
-                               beside.transform.DOMoveY(yOriginalBeside - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
-                               .OnComplete(() =>
-                               {
-                                   beside.transform.DOMoveY(yOriginalBeside, TIME_DISTANCE_MOVE).SetEase(ease)
+                                        moveBlock.transform.DOMoveY(floatEnd, duration).SetEase(ease)
                                        .OnComplete(() =>
                                        {
-                                           besideBox.enabled = true;
+
+                                           BoxCollider2D besideBox = beside.gameObject.GetComponent<BoxCollider2D>();
+
+                                           float yOriginal = moveBlock.transform.position.y;
+                                           float yOriginalBeside = beside.transform.position.y;
+
+                                           if (beside.transform.childCount != 0)
+                                           {
+
+                                               moveBlock.transform.DOMoveY(yOriginal - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                   .OnComplete(() =>
+                                                   {
+                                                       moveBlock.transform.DOMoveY(yOriginal, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                           .OnComplete(() =>
+                                                           {
+                                                               target.boxTileSlot.enabled = true;
+                                                           });
+                                                   });
+
+                                               besideBox.enabled = false;
+
+                                               beside.transform.DOMoveY(yOriginalBeside - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                               .OnComplete(() =>
+                                               {
+                                                   beside.transform.DOMoveY(yOriginalBeside, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                       .OnComplete(() =>
+                                                       {
+                                                           besideBox.enabled = true;
+                                                       });
+                                               });
+                                           }
+                                           else
+                                           {
+                                               target.boxTileSlot.enabled = true;
+                                           }
+
                                        });
-                               });
-                           }
-                           else
-                           {
-                               target.boxTileSlot.enabled = true;
-                           }
+                                    }
 
-                       });
-                    }
+                                    else
+                                    {
+                                        moveBlock.transform.DOMoveY(floatEnd, duration).SetEase(ease);
+                                    }
 
-                    else
-                    {
-                        this.container.transform.DOMoveY(floatEnd, duration).SetEase(ease);
-                    }
+                                    if (isSaw)
+                                    {
 
-                    if (isSaw)
-                    {
+                                        if (isNextTo)
+                                        {
 
-                        this.container.transform.SetParent(transform.root);
+                                            Destroy(moveBlock.gameObject);
 
-                        if (isNextTo)
-                        {
-                            int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
-                            GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
-                            GameObject away = this.container;
+                                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                            Destroy(away.gameObject);
+                                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
 
-                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+                                            float timeBreak = main.duration;
 
-                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+                                            DOVirtual.DelayedCall(timeBreak, () =>
+                                            {
+                                                Destroy(breakPre.gameObject);
+                                            });
 
-                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+                                        }
 
-                            float timeBreak = main.duration;
+                                        else
+                                        {
+                                            DOVirtual.DelayedCall(duration, () =>
+                                            {
 
-                            DOVirtual.DelayedCall(timeBreak, () =>
-                            {
-                                Destroy(breakPre.gameObject);
-                            });
+                                                Destroy(moveBlock.gameObject);
 
-                        }
+                                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
-                        else
-                        {
-                            DOVirtual.DelayedCall(duration, () =>
-                            {
-                                int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
-                                GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                                GameObject away = this.container;
+                                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
 
-                                Destroy(away.gameObject);
+                                                float timeBreak = main.duration;
 
-                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+                                                DOVirtual.DelayedCall(timeBreak, () =>
+                                                {
+                                                    Destroy(breakPre.gameObject);
+                                                });
 
-                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+                                            });
 
-                                float timeBreak = main.duration;
+                                        }
 
-                                DOVirtual.DelayedCall(timeBreak, () =>
-                                {
-                                    Destroy(breakPre.gameObject);
+                                    }
+
+                                    if (isBoom)
+                                    {
+                                        if (isNextTo)
+                                        {
+                                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                                            DOVirtual.DelayedCall(1f, () =>
+                                            {
+                                                Destroy(explosionPre.gameObject);
+                                            });
+
+                                            Explosion(posX + 1, colPos);
+                                        }
+
+                                        else
+                                        {
+                                            DOVirtual.DelayedCall(duration, () =>
+                                            {
+                                                GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                                explosionPre.transform.position = colorTileSlot.transform.position;
+                                                Explosion(posX + 1, colPos);
+
+                                                DOVirtual.DelayedCall(1f, () =>
+                                                {
+                                                    Destroy(explosionPre.gameObject);
+
+                                                });
+                                            });
+                                        }
+                                    }
                                 });
+                        });
 
 
-                            });
-
-                        }
-
-                    }
-
-                    if (isBoom)
-                    {
-                        if (isNextTo)
-                        {
-                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
-                            explosionPre.transform.position = colorTileSlot.transform.position;
-
-                            DOVirtual.DelayedCall(1f, () =>
-                            {
-                                Destroy(explosionPre.gameObject);
-                            });
-
-                            Explosion(posX + 1, colPos);
-                        }
-
-                        else
-                        {
-                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
-                            explosionPre.transform.position = colorTileSlot.transform.position;
-
-                            DOVirtual.DelayedCall(1f, () =>
-                            {
-                                Destroy(explosionPre.gameObject);
-                            });
-
-                            DOVirtual.DelayedCall(duration, () =>
-                            {
-                                Explosion(posX + 1, colPos);
-                            });
-                        }
-                    }
 
                 }
             }
@@ -1143,9 +1188,9 @@ public class TileSlot : MonoBehaviour
 
             duration = Vector2.Distance(this.transform.position, new Vector2(-floatEnd, this.transform.position.y)) / speed;
 
-            GameObject away = this.container;
+            durationCheck += duration;
 
-            away.GetComponent<TrailRenderer>().enabled = true;
+            GameObject away = this.container;
 
             float scale = away.transform.localScale.x;
 
@@ -1259,7 +1304,19 @@ public class TileSlot : MonoBehaviour
                 {
                     CheckChildrenOfRotation(this);
 
-                    this.container.transform.SetParent(gridManager.GetTileSlot(rowPos, posY).transform);
+                    GameObject moveBlock = this.container;
+
+                    if (isSaw)
+                    {
+                        moveBlock.transform.SetParent(transform.root);
+                        int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
+                        GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                    }
+                    else
+                    {
+                        moveBlock.transform.SetParent(targetTileSlot.transform);
+
+                    }
 
                     var floatEnd = gridManager.GetTileSlot(rowPos, posY).transform.position.x;
 
@@ -1268,146 +1325,149 @@ public class TileSlot : MonoBehaviour
                     TileSlot target = gridManager.GetTileSlot(rowPos, posY).GetComponent<TileSlot>();
                     target.boxTileSlot.enabled = false;
 
-                    TileSlot beside = gridManager.GetTileSlot(rowPos, posY - 1).GetComponent<TileSlot>();
+                    float scale = moveBlock.transform.localScale.x;
 
-                    if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
-                    {
-                        this.container.transform.DOMoveX(floatEnd, duration).SetEase(ease)
-                       .OnComplete(() =>
-                       {
+                    moveBlock.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
+                        .OnComplete(() =>
+                        {
+                            moveBlock.transform.DOScale(scale, timeScaleBlock)
+                                .OnComplete(() =>
+                                {
+                                    TileSlot beside = gridManager.GetTileSlot(rowPos, posY - 1).GetComponent<TileSlot>();
 
-                           BoxCollider2D besideBox = beside.gameObject.GetComponent<BoxCollider2D>();
-
-                           float xOriginal = this.container.transform.position.x;
-                           float xOriginalBeside = beside.transform.position.x;
-
-                           if (beside.transform.childCount != 0)
-                           {
-
-                               this.container.transform.DOMoveX(xOriginal - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
-                                   .OnComplete(() =>
-                                   {
-                                       this.container.transform.DOMoveX(xOriginal, TIME_DISTANCE_MOVE).SetEase(ease)
-                                           .OnComplete(() =>
-                                           {
-                                               target.boxTileSlot.enabled = true;
-                                           });
-                                   });
-
-                               besideBox.enabled = false;
-
-                               beside.transform.DOMoveX(xOriginalBeside - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
-                               .OnComplete(() =>
-                               {
-                                   beside.transform.DOMoveX(xOriginalBeside, TIME_DISTANCE_MOVE).SetEase(ease)
+                                    if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
+                                    {
+                                        moveBlock.transform.DOMoveX(floatEnd, duration).SetEase(ease)
                                        .OnComplete(() =>
                                        {
-                                           besideBox.enabled = true;
+
+                                           BoxCollider2D besideBox = beside.gameObject.GetComponent<BoxCollider2D>();
+
+                                           float xOriginal = moveBlock.transform.position.x;
+                                           float xOriginalBeside = beside.transform.position.x;
+
+                                           if (beside.transform.childCount != 0)
+                                           {
+
+                                               moveBlock.transform.DOMoveX(xOriginal - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                   .OnComplete(() =>
+                                                   {
+                                                       moveBlock.transform.DOMoveX(xOriginal, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                           .OnComplete(() =>
+                                                           {
+                                                               target.boxTileSlot.enabled = true;
+                                                           });
+                                                   });
+
+                                               besideBox.enabled = false;
+
+                                               beside.transform.DOMoveX(xOriginalBeside - DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                               .OnComplete(() =>
+                                               {
+                                                   beside.transform.DOMoveX(xOriginalBeside, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                       .OnComplete(() =>
+                                                       {
+                                                           besideBox.enabled = true;
+                                                       });
+                                               });
+                                           }
+                                           else
+                                           {
+                                               target.boxTileSlot.enabled = true;
+                                           }
+
                                        });
-                               });
-                           }
-                           else
-                           {
-                               target.boxTileSlot.enabled = true;
-                           }
+                                    }
 
-                       });
-                    }
+                                    else
+                                    {
+                                        moveBlock.transform.DOMoveX(floatEnd, duration).SetEase(ease);
+                                    }
 
-                    else
-                    {
-                        this.container.transform.DOMoveX(floatEnd, duration).SetEase(ease);
-                    }
+                                    if (isSaw)
+                                    {
 
-                    if (isSaw)
-                    {
+                                        if (isNextTo)
+                                        {
 
-                        this.container.transform.SetParent(transform.root);
+                                            Destroy(moveBlock.gameObject);
 
-                        if (isNextTo)
-                        {
-                            int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
-                            GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
-                            GameObject away = this.container;
+                                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                            Destroy(away.gameObject);
+                                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
 
-                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+                                            float timeBreak = main.duration;
 
-                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+                                            DOVirtual.DelayedCall(timeBreak, () =>
+                                            {
+                                                Destroy(breakPre.gameObject);
+                                            });
 
-                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+                                        }
 
-                            float timeBreak = main.duration;
+                                        else
+                                        {
+                                            
+                                            DOVirtual.DelayedCall(duration, () =>
+                                            {
 
-                            DOVirtual.DelayedCall(timeBreak, () =>
-                            {
-                                Destroy(breakPre.gameObject);
-                            });
+                                                Destroy(moveBlock.gameObject);
 
-                        }
+                                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
-                        else
-                        {
-                            DOVirtual.DelayedCall(duration, () =>
-                            {
-                                int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
-                                GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                                GameObject away = this.container;
+                                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
 
-                                Destroy(away.gameObject);
+                                                float timeBreak = main.duration;
 
-                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+                                                DOVirtual.DelayedCall(timeBreak, () =>
+                                                {
+                                                    Destroy(breakPre.gameObject);
+                                                });
+                                            });
 
-                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+                                        }
 
-                                float timeBreak = main.duration;
+                                    }
+                                    if (isBoom)
+                                    {
+                                        if (isNextTo)
+                                        {
+                                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                            explosionPre.transform.position = colorTileSlot.transform.position;
 
-                                DOVirtual.DelayedCall(timeBreak, () =>
-                                {
-                                    Destroy(breakPre.gameObject);
+                                            DOVirtual.DelayedCall(1f, () =>
+                                            {
+                                                Destroy(explosionPre.gameObject);
+                                            });
+
+                                            Explosion(rowPos, posY - 1);
+                                        }
+
+                                        else
+                                        {
+                                            DOVirtual.DelayedCall(duration, () =>
+                                            {
+                                                GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                                explosionPre.transform.position = colorTileSlot.transform.position;
+                                                Explosion(rowPos, posY - 1);
+
+                                                DOVirtual.DelayedCall(1f, () =>
+                                                {
+                                                    Destroy(explosionPre.gameObject);
+
+                                                });
+                                            });
+                                        }
+                                    }
                                 });
-                            });
+                        });
 
 
-                        }
-
-                    }
-                    if (isBoom)
-                    {
-                        if (isNextTo)
-                        {
-                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
-                            explosionPre.transform.position = colorTileSlot.transform.position;
-
-                            DOVirtual.DelayedCall(1f, () =>
-                            {
-                                Destroy(explosionPre.gameObject);
-                            });
-
-                            Explosion(rowPos, posY - 1);
-                        }
-
-                        else
-                        {
-                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
-                            explosionPre.transform.position = colorTileSlot.transform.position;
-
-                            DOVirtual.DelayedCall(1f, () =>
-                            {
-                                Destroy(explosionPre.gameObject);
-                            });
-
-                            DOVirtual.DelayedCall(duration, () =>
-                            {
-                                Explosion(rowPos, posY - 1);
-                            });
-                        }
-                    }
 
                 }
             }
@@ -1486,9 +1546,10 @@ public class TileSlot : MonoBehaviour
             var floatEnd = (Screen.width + (2.56f * Camera.main.orthographicSize) * 2f) / CameraExtension.PixelsPerUnit(Camera.main);
             duration = Vector2.Distance(this.transform.position, new Vector2(floatEnd, this.transform.position.y)) / speed;
 
+            durationCheck = duration;
+
             GameObject away = this.container;
 
-            away.GetComponent<TrailRenderer>().enabled = true;
 
             float scale = away.transform.localScale.x;
 
@@ -1603,156 +1664,178 @@ public class TileSlot : MonoBehaviour
 
                     CheckChildrenOfRotation(this);
 
+                    GameObject moveBlock = this.container;
 
-                    this.container.transform.SetParent(gridManager.GetTileSlot(rowPos, posY).transform);
+                    if (isSaw)
+                    {
+                        moveBlock.transform.SetParent(transform.root);
+
+                        int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
+                        GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+
+                    }
+                    else
+                    {
+                        moveBlock.transform.SetParent(targetTileSlot.transform);
+                    }
 
                     var floatEnd = gridManager.GetTileSlot(rowPos, posY).transform.position.x;
                     duration = Vector2.Distance(this.transform.position, new Vector2(floatEnd, this.transform.position.y)) / speed;
 
+                    durationCheck = duration;
+
+                    Debug.Log("DurationCheckIn: " + durationCheck);
+
                     TileSlot target = gridManager.GetTileSlot(rowPos, posY).GetComponent<TileSlot>();
                     target.boxTileSlot.enabled = false;
 
-                    TileSlot beside = gridManager.GetTileSlot(rowPos, posY + 1).GetComponent<TileSlot>();
+                    float scale = moveBlock.transform.localScale.x;
 
-                    if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
-                    {
-                        this.container.transform.DOMoveX(floatEnd, duration).SetEase(ease)
-                       .OnComplete(() =>
-                       {
+                    moveBlock.transform.DOScale(scale * targetScaleBlock, timeScaleBlock)
+                        .OnComplete(() =>
+                        {
+                            moveBlock.transform.DOScale(scale, timeScaleBlock)
+                                .OnComplete(() =>
+                                {
+                                    TileSlot beside = gridManager.GetTileSlot(rowPos, posY + 1).GetComponent<TileSlot>();
 
-                           BoxCollider2D besideBox = beside.gameObject.GetComponent<BoxCollider2D>();
-
-                           float xOriginal = this.container.transform.position.x;
-                           float xOriginalBeside = beside.transform.position.x;
-
-                           if (beside.transform.childCount != 0)
-                           {
-
-                               this.container.transform.DOMoveX(xOriginal + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
-                                   .OnComplete(() =>
-                                   {
-                                       this.container.transform.DOMoveX(xOriginal, TIME_DISTANCE_MOVE).SetEase(ease)
-                                           .OnComplete(() =>
-                                           {
-                                               target.boxTileSlot.enabled = true;
-                                           });
-                                   });
-
-                               besideBox.enabled = false;
-
-                               beside.transform.DOMoveX(xOriginalBeside + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
-                               .OnComplete(() =>
-                               {
-                                   beside.transform.DOMoveX(xOriginalBeside, TIME_DISTANCE_MOVE).SetEase(ease)
+                                    if (beside.gameObject.transform.GetChild(0).transform.childCount != 0)
+                                    {
+                                        moveBlock.transform.DOMoveX(floatEnd, duration).SetEase(ease)
                                        .OnComplete(() =>
                                        {
-                                           besideBox.enabled = true;
+
+                                           BoxCollider2D besideBox = beside.gameObject.GetComponent<BoxCollider2D>();
+
+                                           float xOriginal = moveBlock.transform.position.x;
+                                           float xOriginalBeside = beside.transform.position.x;
+
+                                           if (beside.transform.childCount != 0)
+                                           {
+
+                                               moveBlock.transform.DOMoveX(xOriginal + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                   .OnComplete(() =>
+                                                   {
+                                                       moveBlock.transform.DOMoveX(xOriginal, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                           .OnComplete(() =>
+                                                           {
+                                                               target.boxTileSlot.enabled = true;
+                                                           });
+                                                   });
+
+                                               besideBox.enabled = false;
+
+                                               beside.transform.DOMoveX(xOriginalBeside + DISTANCE_MOVE, TIME_DISTANCE_MOVE).SetEase(ease)
+                                               .OnComplete(() =>
+                                               {
+                                                   beside.transform.DOMoveX(xOriginalBeside, TIME_DISTANCE_MOVE).SetEase(ease)
+                                                       .OnComplete(() =>
+                                                       {
+                                                           besideBox.enabled = true;
+                                                       });
+                                               });
+                                           }
+                                           else
+                                           {
+                                               target.boxTileSlot.enabled = true;
+                                           }
+
                                        });
-                               });
-                           }
-                           else
-                           {
-                               target.boxTileSlot.enabled = true;
-                           }
+                                    }
 
-                       });
-                    }
+                                    else
+                                    {
+                                        moveBlock.transform.DOMoveX(floatEnd, duration).SetEase(ease);
+                                    }
 
-                    else
-                    {
-                        this.container.transform.DOMoveX(floatEnd, duration).SetEase(ease);
-                    }
+                                    if (isSaw)
+                                    {
 
-                    if (isSaw)
-                    {
+                                        if (isNextTo)
+                                        {
 
-                        this.container.transform.SetParent(transform.root);
+                                            Destroy(moveBlock.gameObject);
 
-                        if (isNextTo)
-                        {
-                            int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
-                            GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
-                            GameObject away = this.container;
+                                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                            Destroy(away.gameObject);
+                                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
 
-                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+                                            float timeBreak = main.duration;
 
-                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
-
-                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
-
-                            float timeBreak = main.duration;
-
-                            DOVirtual.DelayedCall(timeBreak, () =>
-                            {
-                                Destroy(breakPre.gameObject);
-                            });
+                                            DOVirtual.DelayedCall(timeBreak, () =>
+                                            {
+                                                Destroy(breakPre.gameObject);
+                                            });
 
 
-                        }
-                        else
-                        {
-                            DOVirtual.DelayedCall(duration, () =>
-                            {
-                                int index = GameManager.Instance.currentGrid.listItem.IndexOf(this.item.gameObject);
-                                GameManager.Instance.currentGrid.listItem.RemoveAt(index);
+                                        }
+                                        else
+                                        {
 
-                                GameObject away = this.container;
+                                            DOVirtual.DelayedCall(duration, () =>
+                                            {
+                                                
 
-                                Destroy(away.gameObject);
+                                                Destroy(moveBlock.gameObject);
 
-                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+                                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
-                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+                                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
-                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+                                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
 
-                                float timeBreak = main.duration;
+                                                float timeBreak = main.duration;
 
-                                DOVirtual.DelayedCall(timeBreak, () =>
-                                {
-                                    Destroy(breakPre.gameObject);
+                                                DOVirtual.DelayedCall(timeBreak, () =>
+                                                {
+                                                    Destroy(breakPre.gameObject);
+                                                });
+
+                                            });
+
+
+                                        }
+
+                                    }
+                                    if (isBoom)
+                                    {
+                                        if (isNextTo)
+                                        {
+                                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                            explosionPre.transform.position = colorTileSlot.transform.position;
+
+                                            DOVirtual.DelayedCall(1f, () =>
+                                            {
+                                                Destroy(explosionPre.gameObject);
+                                            });
+
+                                            Explosion(rowPos, posY + 1);
+                                        }
+
+                                        else
+                                        {
+
+                                            DOVirtual.DelayedCall(duration, () =>
+                                            {
+                                                GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
+                                                explosionPre.transform.position = colorTileSlot.transform.position;
+                                                Explosion(rowPos, posY + 1);
+
+                                                DOVirtual.DelayedCall(1f, () =>
+                                                {
+                                                    Destroy(explosionPre.gameObject);
+
+                                                });
+                                            });
+
+                                        }
+                                    }
                                 });
+                        });
 
-                            });
 
-
-                        }
-
-                    }
-                    if (isBoom)
-                    {
-                        if (isNextTo)
-                        {
-                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
-                            explosionPre.transform.position = colorTileSlot.transform.position;
-
-                            DOVirtual.DelayedCall(1f, () =>
-                            {
-                                Destroy(explosionPre.gameObject);
-                            });
-
-                            Explosion(rowPos, posY + 1);
-                        }
-
-                        else
-                        {
-                            GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
-                            explosionPre.transform.position = colorTileSlot.transform.position;
-
-                            DOVirtual.DelayedCall(1f, () =>
-                            {
-                                Destroy(explosionPre.gameObject);
-                            });
-
-                            DOVirtual.DelayedCall(duration, () =>
-                            {
-                                Explosion(rowPos, posY + 1);
-                            });
-                        }
-                    }
                 }
 
             }
@@ -2126,7 +2209,7 @@ public class TileSlot : MonoBehaviour
                                 transform.GetComponentInChildren<TextMeshProUGUI>().text = "";
                             }
 
-                                Destroy(transform.gameObject);
+                            Destroy(transform.gameObject);
                         }
                     });
 
@@ -2147,24 +2230,33 @@ public class TileSlot : MonoBehaviour
 
                 float time = 0f;
 
-                float duration = GameManager.Instance.timeCountDown / gridCurrent.listItem.Count;
-
-                for (int i = 0; i < gridCurrent.listItem.Count; i++)
+                float duration;
+                if (gridCurrent.listItem.Count != 0)
                 {
-                    SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
-                    DOVirtual.DelayedCall(time, () =>
+                    duration = GameManager.Instance.timeCountDown;
+
+                    for (int i = 0; i < gridCurrent.listItem.Count; i++)
                     {
-                        spriteRenderer.color = new Color(1, 0, 0, 1);
-                    });
+                        SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
 
-                    DOVirtual.DelayedCall((time + duration), () =>
-                    {
-                        spriteRenderer.color = new Color(1, 1, 1, 1);
+                        DOVirtual.DelayedCall(time + duration, () =>
+                        {
+                            spriteRenderer.DOColor(new Color(1, 0, 0, 1), duration * 2)
+                                .OnComplete(() =>
+                                {
+                                    spriteRenderer.DOColor(new Color(1, 1, 1, 1), duration * 2);
+                                });
+                        });
 
-                    });
+                        time += duration;
 
-                    time += duration;
+                    }
 
+                }
+
+                else
+                {
+                    duration = 0;
                 }
 
                 DOVirtual.DelayedCall(time + duration * 2, () =>
@@ -3041,7 +3133,7 @@ public class TileSlot : MonoBehaviour
                     targetItem.transform.parent.GetComponent<SpriteRenderer>().color = new Color(1, 0, 0, 1);
                     GameManager.Instance.state = GameManager.State.Pause;
 
-                    DOVirtual.DelayedCall(GameManager.Instance.timeCountDown, () =>
+                    DOVirtual.DelayedCall(GameManager.Instance.timeWaitBlockRotate, () =>
                     {
                         AudioManager.Instance.sfxSource2.pitch = 1;
                         GameManager.Instance.combo = 0;
@@ -3512,6 +3604,14 @@ public class TileSlot : MonoBehaviour
         Vector3 offset = block.transform.position - centerPos;
         GameManager.Instance.isRotating = true;
 
+        TrailRenderer tempTrailRender = new TrailRenderer();
+
+        if (block.GetComponentInChildren<TrailRenderer>() != null)
+        {
+            tempTrailRender = block.GetComponentInChildren<TrailRenderer>();
+            tempTrailRender.enabled = false;
+        }
+
         while (angle < anglePoint)
         {
 
@@ -3527,6 +3627,14 @@ public class TileSlot : MonoBehaviour
 
             yield return null;
         }
+        DOVirtual.DelayedCall(0.01f, () =>
+        {
+            if (tempTrailRender != null)
+            {
+                tempTrailRender.enabled = true;
+            }
+        });
+        
 
         Cover cover = this.GetComponentInChildren<Cover>();
 
@@ -3656,24 +3764,33 @@ public class TileSlot : MonoBehaviour
 
                 float time = 0f;
 
-                float duration = GameManager.Instance.timeCountDown / gridCurrent.listItem.Count;
-
-                for (int i = 0; i < gridCurrent.listItem.Count; i++)
+                float duration;
+                if (gridCurrent.listItem.Count != 0)
                 {
-                    SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
-                    DOVirtual.DelayedCall(time, () =>
+                    duration = GameManager.Instance.timeCountDown;
+
+                    for (int i = 0; i < gridCurrent.listItem.Count; i++)
                     {
-                        spriteRenderer.color = new Color(1, 0, 0, 1);
-                    });
+                        SpriteRenderer spriteRenderer = gridCurrent.listItem[i].transform.parent.GetComponent<SpriteRenderer>();
 
-                    DOVirtual.DelayedCall(time + duration, () =>
-                    {
-                        spriteRenderer.color = new Color(1, 1, 1, 1);
+                        DOVirtual.DelayedCall(time + duration, () =>
+                        {
+                            spriteRenderer.DOColor(new Color(1, 0, 0, 1), duration * 2)
+                                .OnComplete(() =>
+                                {
+                                    spriteRenderer.DOColor(new Color(1, 1, 1, 1), duration * 2);
+                                });
+                        });
 
-                    });
+                        time += duration;
 
-                    time += duration;
+                    }
 
+                }
+
+                else
+                {
+                    duration = 0;
                 }
 
                 DOVirtual.DelayedCall(time + duration * 2, () =>

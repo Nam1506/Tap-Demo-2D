@@ -104,14 +104,14 @@ MonoBehaviour:
   item: {fileID: 0}
   container: {fileID: 0}
   ease: 5
-  speed: 30
+  speed: 40
   canMove: 1
   boxTileSlot: {fileID: 8733833981379160206}
-  speedRotate: 400
+  speedRotate: 500
   rotateParent: {fileID: 0}
   timeRotate: 0.1
-  timeScaleBlock: 0.1
-  targetScaleBlock: 0.8
+  timeScaleBlock: 0.08
+  targetScaleBlock: 0.7
 --- !u!61 &8733833981379160206
 BoxCollider2D:
   m_ObjectHideFlags: 0

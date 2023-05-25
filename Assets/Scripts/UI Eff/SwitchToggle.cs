@@ -173,12 +173,12 @@ public class SwitchToggle : MonoBehaviour
 
                 if (source1 != null)
                 {
-                    source1.mute = false;
+                    source1.mute = true;
                 }
 
                 if (sourcePopup != null)
                 {
-                    sourcePopup.mute = false;
+                    sourcePopup.mute = true;
                 }
 
                 uiHandleRectTransform.DOAnchorPos(handlePosition, 0.1f);

@@ -38,6 +38,10 @@ public class GridManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI moveText;
     public bool checkRotation = false;
 
+    public Color startColor;
+    public Color endColor;
+
+
 
 
     private void Awake()
@@ -227,7 +231,6 @@ public class GridManager : MonoBehaviour
     public bool CheckLoseGame()
     {
 
-
         if (listItem.Count == 0)
         {
             return false;
@@ -262,7 +265,6 @@ public class GridManager : MonoBehaviour
                 return false;
             }
 
-            Debug.Log("Enter2");
         }
 
         for (int i = 0; i < listItem.Count; i++)

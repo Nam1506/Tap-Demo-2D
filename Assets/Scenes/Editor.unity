@@ -2433,7 +2433,6 @@ MonoBehaviour:
   panelTop: {fileID: 194990252}
   panelBot: {fileID: 1337839640}
   canva: {fileID: 1093149290}
-  sizeCell: 0
 --- !u!1 &541063232
 GameObject:
   m_ObjectHideFlags: 0
@@ -6160,8 +6159,11 @@ MonoBehaviour:
   isRotating: 0
   currentIndexGrid: -1
   maxCamera: 10
+  timeCountDown: 0
   currentGrid: {fileID: 0}
   combo: 0
+  listBreakPrefab: []
+  explosionPrefab: {fileID: 0}
 --- !u!4 &1349804476
 Transform:
   m_ObjectHideFlags: 0
@@ -7688,6 +7690,7 @@ MonoBehaviour:
   popUpSetting: {fileID: 0}
   popUpLose: {fileID: 0}
   popUpWin: {fileID: 0}
+  canva: {fileID: 0}
   coinPrefab: {fileID: 0}
   fireWorkBase: {fileID: 0}
   fireWork: []
@@ -7699,6 +7702,10 @@ MonoBehaviour:
   coinMultiple: {fileID: 0}
   coinGet: {fileID: 0}
   coin: {fileID: 0}
+  targetTransformCoin: {fileID: 0}
+  jumpPower: 0
+  durationJump: 0
+  numberCoin: 0
   timeCoin: 0
 --- !u!4 &1655872028
 Transform:
@@ -9067,6 +9074,7 @@ MonoBehaviour:
   cameraController: {fileID: 519420033}
   dropDown: {fileID: 570442913}
   mask: {fileID: 0}
+  coverPrefab: {fileID: 0}
   rows: 0
   cols: 0
   gameScene: Game

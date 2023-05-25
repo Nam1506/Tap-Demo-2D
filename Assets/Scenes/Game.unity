@@ -8000,6 +8000,7 @@ MonoBehaviour:
   hiddenPrefab: {fileID: 8842042115816415834, guid: bbba04449fc9aec42bd807f235766a7f, type: 3}
   listHiddenNumber: []
   linePrefab: {fileID: 7308552272877647747, guid: 6ae4745b1a7b90343981f5f8d4fd2aed, type: 3}
+  trailPrefab: {fileID: 970273225369136531, guid: 0be6a5fa072d5914cb153ee0e6a5a5b7, type: 3}
   listItem: []
   listRotate: []
   listGrid: []
@@ -8015,7 +8016,8 @@ MonoBehaviour:
   isRotating: 0
   currentIndexGrid: -1
   maxCamera: 10
-  timeCountDown: 2
+  timeCountDown: 0.15
+  timeWaitBlockRotate: 0.2
   currentGrid: {fileID: 0}
   combo: 0
   listBreakPrefab:

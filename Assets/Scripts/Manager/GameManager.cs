@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
     public List<GameObject> listHiddenNumber;
 
     public GameObject linePrefab;
+    public GameObject trailPrefab;
 
     public List<GameObject> listItem;
     public List<GameObject> listRotate;
@@ -40,6 +41,8 @@ public class GameManager : MonoBehaviour
     public int currentIndexGrid = -1;
     public float maxCamera = 10f;
     public float timeCountDown;
+    public float timeWaitBlockRotate;
+
 
     public GridManager currentGrid;
 

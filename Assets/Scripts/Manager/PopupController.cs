@@ -192,7 +192,9 @@ public class PopupController : MonoBehaviour
         PlayerPrefs.SetString("coin", targetCoin.ToString());
 
         canRandom = false;
+        Debug.Log("Stop");
         StopCoroutine(coroutineStartNumber);
+        Debug.Log("Stop");
 
         multipleText[index].color = Color.white;
         sprites[index].color = Color.white;
