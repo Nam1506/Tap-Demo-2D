@@ -28,6 +28,7 @@ public class GridManager : MonoBehaviour
     public List<GameObject> listRotate;
     public List<GameObject> listHiddenNumber;
     public GameObject blockedTile;
+    public GameObject mask;
 
     public bool haveSaw;
     public string moveCount;
@@ -40,8 +41,6 @@ public class GridManager : MonoBehaviour
 
     public Color startColor;
     public Color endColor;
-
-
 
 
     private void Awake()
@@ -196,8 +195,7 @@ public class GridManager : MonoBehaviour
                 GameObject item = go.transform.parent.GetChild(0).gameObject;
                 int index = listHiddenNumber.IndexOf(go);
                 deleteList.Add(index);
-                item.transform.localScale = Vector3.one * 1.7f;
-                item.transform.GetChild(0).localScale = Vector3.one * 1.2f;
+                item.transform.GetChild(0).localScale = Vector3.one;
 
                 go.transform.SetParent(transform.root);
 

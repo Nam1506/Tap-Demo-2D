@@ -30,6 +30,7 @@ public class PopupController : MonoBehaviour
     public TextMeshProUGUI coinMultiple;
     public TextMeshProUGUI coinGet;
     public TextMeshProUGUI coin;
+    public TextMeshProUGUI coinMiddle;
 
     public GameObject targetTransformCoin;
 
@@ -122,13 +123,6 @@ public class PopupController : MonoBehaviour
     {
         popUpWin.SetActive(true);
         fireWorkBase.SetActive(true);
-        for (int i = 0; i < fireWork.Count; i++)
-        {
-            ParticleSystem.MainModule mainModule = fireWork[i].main;
-            float num = Camera.main.orthographicSize / 10 * 2;
-            mainModule.startSpeed = 20 * num / 1.5f;
-
-        }
 
         popUpWin.GetComponent<CanvasGroup>().DOFade(1f, timeFade)
             .OnComplete(() =>
@@ -187,14 +181,12 @@ public class PopupController : MonoBehaviour
 
     private IEnumerator IncreamentCoin(int addCoin)
     {
-        int currentCoin = int.Parse(PlayerPrefs.GetString("coin"));
-        int targetCoin = addCoin + currentCoin;
+        float currentCoin = float.Parse(PlayerPrefs.GetString("coin"));
+        float targetCoin = addCoin + currentCoin;
         PlayerPrefs.SetString("coin", targetCoin.ToString());
 
         canRandom = false;
-        Debug.Log("Stop");
         StopCoroutine(coroutineStartNumber);
-        Debug.Log("Stop");
 
         multipleText[index].color = Color.white;
         sprites[index].color = Color.white;
@@ -238,9 +230,6 @@ public class PopupController : MonoBehaviour
 
         foreach(GameObject coinPre in listCoin)
         {
-            Debug.Log("time: " + time);
-            Debug.Log("Add " + (time + durationJump + 0.1f));
-
 
             DOVirtual.DelayedCall(time, () =>
             {
@@ -258,15 +247,23 @@ public class PopupController : MonoBehaviour
                 
         }
 
-        Debug.Log("addcoin: " + addCoin);
+        float durationWaitCoin = (waitTime + durationJump) / addCoin;
+        float totalDuration = waitTime + durationJump;
+        float elapsed = 0f;
+        float deltaCoin = targetCoin - currentCoin;
+        float process;
 
-        while (currentCoin < targetCoin)
+        while (elapsed <= totalDuration)
         {
-            currentCoin++;
-            coin.text = currentCoin.ToString();
-            yield return new WaitForSeconds( (waitTime + durationJump) / addCoin);
+            process = Mathf.Clamp01(elapsed / totalDuration);
+            currentCoin = targetCoin - (1 - process) * deltaCoin;
+            coin.text = Mathf.RoundToInt(currentCoin).ToString();
+
+            elapsed += Time.deltaTime;
+            yield return null;
         }
 
+        coin.text = Mathf.RoundToInt(targetCoin).ToString();
 
         fireWorkBase.SetActive(false);
 
@@ -333,6 +330,8 @@ public class PopupController : MonoBehaviour
             }
 
             coinMultiple.text = coinTemp.ToString();
+            coinMiddle.text = "+" + coinTemp;
+
 
 
             yield return new WaitForSeconds(speedRandom);

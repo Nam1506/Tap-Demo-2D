@@ -96,6 +96,7 @@ public class GameManager : MonoBehaviour
             {
                 PlayerPrefs.SetString("coin", "0");
                 PopupController.Instance.coin.text = "0";
+                PopupController.Instance.coinGet.text = "20";
             }
 
         }

@@ -25,6 +25,7 @@ public class TileSlot : MonoBehaviour
     [SerializeField] float speed = 1f;
 
     public bool canMove = true;
+    public bool haveBoom = false;
 
     [SerializeField] BoxCollider2D boxTileSlot;
 
@@ -86,6 +87,8 @@ public class TileSlot : MonoBehaviour
         {
             return;
         }
+
+        haveBoom = false;
 
         durationCheck = timeScaleBlock * 2;
 
@@ -220,7 +223,7 @@ public class TileSlot : MonoBehaviour
             });
         }
 
-        if (nameItem != item.rotate)
+        if (nameItem != item.rotate && !haveBoom)
         {
             DOVirtual.DelayedCall(0.1f, () =>
             {
@@ -310,7 +313,6 @@ public class TileSlot : MonoBehaviour
 
                             GameManager.Instance.currentIndexGrid++;
                             GameManager.Instance.currentGrid = GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid];
-                            Debug.Log("moveCount: " + GameManager.Instance.currentGrid.moveCount);
                             GameManager.Instance.moveText.text = GameManager.Instance.currentGrid.moveCount + " Moves";
 
                             foreach (GameObject slot in GameManager.Instance.currentGrid.slots)
@@ -493,6 +495,11 @@ public class TileSlot : MonoBehaviour
         {
             if (posX != -1)
             {
+                if (isBoom)
+                {
+                    haveBoom = true;
+                }
+
                 GameObject targetTileSlot = gridManager.GetTileSlot(posX, colPos);
                 GameObject colorTileSlot = gridManager.GetTileSlot(posX - 1, colPos);
 
@@ -676,6 +683,8 @@ public class TileSlot : MonoBehaviour
 
                                                 Destroy(moveBlock.gameObject);
 
+                                                AudioManager.Instance.PlaySFX1("Break");
+
                                                 GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
                                                 breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
@@ -684,7 +693,7 @@ public class TileSlot : MonoBehaviour
 
                                                 float timeBreak = main.duration;
 
-                                                DOVirtual.DelayedCall(timeBreak, () =>
+                                                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                                 {
                                                     Destroy(breakPre.gameObject);
                                                 });
@@ -695,6 +704,7 @@ public class TileSlot : MonoBehaviour
                                             {
                                                 DOVirtual.DelayedCall(duration, () =>
                                                 {
+                                                    AudioManager.Instance.PlaySFX1("Break");
 
                                                     Destroy(moveBlock.gameObject);
 
@@ -706,7 +716,7 @@ public class TileSlot : MonoBehaviour
 
                                                     float timeBreak = main.duration;
 
-                                                    DOVirtual.DelayedCall(timeBreak, () =>
+                                                    DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                                     {
                                                         Destroy(breakPre.gameObject);
                                                     });
@@ -724,6 +734,8 @@ public class TileSlot : MonoBehaviour
 
                                                 GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                                 explosionPre.transform.position = colorTileSlot.transform.position;
+                                                AudioManager.Instance.PlaySFX1("Explosion");
+
 
                                                 DOVirtual.DelayedCall(1f, () =>
                                                 {
@@ -737,6 +749,8 @@ public class TileSlot : MonoBehaviour
                                             {
                                                 DOVirtual.DelayedCall(duration, () =>
                                                 {
+                                                    AudioManager.Instance.PlaySFX1("Explosion");
+
                                                     GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                                     explosionPre.transform.position = colorTileSlot.transform.position;
                                                     Explosion(posX - 1, colPos);
@@ -857,6 +871,11 @@ public class TileSlot : MonoBehaviour
                 List<BoxCollider2D> listBox = new List<BoxCollider2D>();
                 GameObject targetTileSlot = gridManager.GetTileSlot(posX, colPos);
                 GameObject colorTileSlot = gridManager.GetTileSlot(posX + 1, colPos);
+
+                if (isBoom)
+                {
+                    haveBoom = true;
+                }
 
                 if (isNextTo && !isBoom && !isSaw)
                 {
@@ -1033,6 +1052,8 @@ public class TileSlot : MonoBehaviour
 
                                         if (isNextTo)
                                         {
+                                            AudioManager.Instance.PlaySFX1("Break");
+
 
                                             Destroy(moveBlock.gameObject);
 
@@ -1044,7 +1065,7 @@ public class TileSlot : MonoBehaviour
 
                                             float timeBreak = main.duration;
 
-                                            DOVirtual.DelayedCall(timeBreak, () =>
+                                            DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                             {
                                                 Destroy(breakPre.gameObject);
                                             });
@@ -1055,6 +1076,7 @@ public class TileSlot : MonoBehaviour
                                         {
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
+                                                AudioManager.Instance.PlaySFX1("Break");
 
                                                 Destroy(moveBlock.gameObject);
 
@@ -1066,7 +1088,7 @@ public class TileSlot : MonoBehaviour
 
                                                 float timeBreak = main.duration;
 
-                                                DOVirtual.DelayedCall(timeBreak, () =>
+                                                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                                 {
                                                     Destroy(breakPre.gameObject);
                                                 });
@@ -1082,6 +1104,8 @@ public class TileSlot : MonoBehaviour
                                     {
                                         if (isNextTo)
                                         {
+                                            AudioManager.Instance.PlaySFX1("Explosion");
+
                                             GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                             explosionPre.transform.position = colorTileSlot.transform.position;
 
@@ -1097,6 +1121,8 @@ public class TileSlot : MonoBehaviour
                                         {
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
+                                                AudioManager.Instance.PlaySFX1("Explosion");
+
                                                 GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                                 explosionPre.transform.position = colorTileSlot.transform.position;
                                                 Explosion(posX + 1, colPos);
@@ -1217,6 +1243,11 @@ public class TileSlot : MonoBehaviour
                 List<BoxCollider2D> listBox = new List<BoxCollider2D>();
                 GameObject targetTileSlot = gridManager.GetTileSlot(rowPos, posY);
                 GameObject colorTileSlot = gridManager.GetTileSlot(rowPos, posY - 1);
+
+                if (isBoom)
+                {
+                    haveBoom = true;
+                }
 
                 if (isNextTo && !isBoom && !isSaw)
                 {
@@ -1390,6 +1421,8 @@ public class TileSlot : MonoBehaviour
                                         if (isNextTo)
                                         {
 
+                                            AudioManager.Instance.PlaySFX1("Break");
+
                                             Destroy(moveBlock.gameObject);
 
                                             GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
@@ -1400,7 +1433,7 @@ public class TileSlot : MonoBehaviour
 
                                             float timeBreak = main.duration;
 
-                                            DOVirtual.DelayedCall(timeBreak, () =>
+                                            DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                             {
                                                 Destroy(breakPre.gameObject);
                                             });
@@ -1412,6 +1445,7 @@ public class TileSlot : MonoBehaviour
                                             
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
+                                                AudioManager.Instance.PlaySFX1("Break");
 
                                                 Destroy(moveBlock.gameObject);
 
@@ -1423,7 +1457,7 @@ public class TileSlot : MonoBehaviour
 
                                                 float timeBreak = main.duration;
 
-                                                DOVirtual.DelayedCall(timeBreak, () =>
+                                                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                                 {
                                                     Destroy(breakPre.gameObject);
                                                 });
@@ -1437,6 +1471,8 @@ public class TileSlot : MonoBehaviour
                                     {
                                         if (isNextTo)
                                         {
+                                            AudioManager.Instance.PlaySFX1("Explosion");
+
                                             GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                             explosionPre.transform.position = colorTileSlot.transform.position;
 
@@ -1452,6 +1488,8 @@ public class TileSlot : MonoBehaviour
                                         {
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
+                                                AudioManager.Instance.PlaySFX1("Explosion");
+
                                                 GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                                 explosionPre.transform.position = colorTileSlot.transform.position;
                                                 Explosion(rowPos, posY - 1);
@@ -1576,6 +1614,12 @@ public class TileSlot : MonoBehaviour
                 List<BoxCollider2D> listBox = new List<BoxCollider2D>();
                 GameObject targetTileSlot = gridManager.GetTileSlot(rowPos, posY);
                 GameObject colorTileSlot = gridManager.GetTileSlot(rowPos, posY + 1);
+
+                if (isBoom)
+                {
+                    haveBoom = true;
+                }
+
                 if (isNextTo && !isBoom && !isSaw)
                 {
                     SpriteRenderer colorTileSlotSprite = colorTileSlot.transform.GetChild(0).GetComponent<SpriteRenderer>();
@@ -1753,6 +1797,7 @@ public class TileSlot : MonoBehaviour
 
                                         if (isNextTo)
                                         {
+                                            AudioManager.Instance.PlaySFX1("Break");
 
                                             Destroy(moveBlock.gameObject);
 
@@ -1764,7 +1809,7 @@ public class TileSlot : MonoBehaviour
 
                                             float timeBreak = main.duration;
 
-                                            DOVirtual.DelayedCall(timeBreak, () =>
+                                            DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                             {
                                                 Destroy(breakPre.gameObject);
                                             });
@@ -1776,7 +1821,7 @@ public class TileSlot : MonoBehaviour
 
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
-                                                
+                                                AudioManager.Instance.PlaySFX1("Break");
 
                                                 Destroy(moveBlock.gameObject);
 
@@ -1788,7 +1833,7 @@ public class TileSlot : MonoBehaviour
 
                                                 float timeBreak = main.duration;
 
-                                                DOVirtual.DelayedCall(timeBreak, () =>
+                                                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                                 {
                                                     Destroy(breakPre.gameObject);
                                                 });
@@ -1803,6 +1848,8 @@ public class TileSlot : MonoBehaviour
                                     {
                                         if (isNextTo)
                                         {
+                                            AudioManager.Instance.PlaySFX1("Explosion");
+
                                             GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                             explosionPre.transform.position = colorTileSlot.transform.position;
 
@@ -1816,6 +1863,7 @@ public class TileSlot : MonoBehaviour
 
                                         else
                                         {
+                                            AudioManager.Instance.PlaySFX1("Explosion");
 
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
@@ -2394,11 +2442,7 @@ public class TileSlot : MonoBehaviour
                     {
                         if (targetItem.type != item.saw)
                         {
-
                             GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-
-
                             check = false;
                             break;
                         }
@@ -3132,6 +3176,7 @@ public class TileSlot : MonoBehaviour
                 {
                     targetItem.transform.parent.GetComponent<SpriteRenderer>().color = new Color(1, 0, 0, 1);
                     GameManager.Instance.state = GameManager.State.Pause;
+                    VibratePeek();
 
                     DOVirtual.DelayedCall(GameManager.Instance.timeWaitBlockRotate, () =>
                     {
@@ -3670,6 +3715,7 @@ public class TileSlot : MonoBehaviour
 
             if (checkBreak)
             {
+                AudioManager.Instance.PlaySFX1("Break");
 
                 GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
@@ -3679,7 +3725,7 @@ public class TileSlot : MonoBehaviour
 
                 float timeBreak = main.duration;
 
-                DOVirtual.DelayedCall(timeBreak, () =>
+                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                 {
                     Destroy(breakPre.gameObject);
                 });
@@ -3723,6 +3769,8 @@ public class TileSlot : MonoBehaviour
                         }
                     });
 
+                    AudioManager.Instance.PlaySFX1("Break");
+
                     GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
                     breakPre.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, block.transform.position.z);
@@ -3731,7 +3779,7 @@ public class TileSlot : MonoBehaviour
 
                     float timeBreak = main.duration;
 
-                    DOVirtual.DelayedCall(timeBreak, () =>
+                    DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                     {
                         Destroy(breakPre.gameObject);
                     });

@@ -23,12 +23,16 @@ public class JSONSystem : MonoBehaviour
     [SerializeField] GameObject mask;
     [SerializeField] GameObject coverPrefab;
 
+    private bool overMap;
+    private int numberOverMap;
+    private int tempNumber;
+
     public int rows;
     public int cols;
 
     public string gameScene = "Game";
 
-    private const int levelMax = 20;
+    private const int levelMax = 17;
 
     private void Awake()
     {
@@ -189,13 +193,27 @@ public class JSONSystem : MonoBehaviour
 
         GameManager.Instance.listGrid.Clear();
 
+        overMap = false;
 
         int level = number;
 
+        numberOverMap = number;
+
         if(level > levelMax)
         {
-            int randomNum = Random.Range(levelMax - 5, levelMax + 1);
-            level = randomNum;
+            while (true)
+            {
+                int randomNum = Random.Range(levelMax - 5, levelMax + 1);
+                if(randomNum != tempNumber)
+                {
+                    tempNumber = randomNum;
+                    break;
+                }
+            }
+
+            level = tempNumber;
+
+            overMap = true;
         }
 
         string path = Resources.Load<TextAsset>("Levels/Level" + level).ToString();
@@ -228,11 +246,16 @@ public class JSONSystem : MonoBehaviour
             GameManager.Instance.moveText.text = data.map[0].move_count.ToString() + " Moves";
         }
 
+        if (overMap)
+        {
+            GameManager.Instance.levelText.text = "Level " + numberOverMap.ToString();
+            Debug.Log("levelField.text: " + levelField.text);
+        }
+
         //gridManager.GenerateGrid();
 
 
         float distance = 0f;
-        float alpha = 0.9f;
 
         for (int x = 0; x < data.map.Count; x++)
         {
@@ -264,6 +287,12 @@ public class JSONSystem : MonoBehaviour
             if (GameManager.Instance.isSceneGame())
             {
                 GameObject maskPrefab = Instantiate(mask, grid.transform);
+                //grid.mask = maskPrefab;
+
+                //if(x > 0)
+                //{
+                //    grid.mask.gameObject.SetActive(false);
+                //}
 
             }
 
@@ -288,7 +317,12 @@ public class JSONSystem : MonoBehaviour
 
                             item = Instantiate(itemPrefab, slot.transform);
 
-                            item.transform.localScale = Vector3.one * 1.2f;
+                            // ---------------------------------------------------------------TEMP--------------------------------------------------------------
+                            if(item.GetComponent<Item>().GetNameSprite() == item.GetComponent<Item>().boom)
+                            {
+                                item.transform.localScale = Vector3.one * (1.65f / 2.56f);
+
+                            }
 
                             item.GetComponent<SpriteRenderer>().sprite = grid.sprites[map.grid[i][j]];
 
@@ -307,8 +341,8 @@ public class JSONSystem : MonoBehaviour
 
                             item = Instantiate(itemPrefab, container.transform);
 
-                            container.transform.localScale = Vector3.one * 1.7f;
-                            item.transform.localScale = Vector3.one * 1.2f;
+                            //container.transform.localScale = Vector3.one * 1.7f;
+                            //item.transform.localScale = Vector3.one * 1.2f;
 
                             item.transform.localPosition = new Vector3(0, 0, -0.1f);
 

@@ -6144,6 +6144,7 @@ MonoBehaviour:
   hiddenPrefab: {fileID: 8842042115816415834, guid: bbba04449fc9aec42bd807f235766a7f, type: 3}
   listHiddenNumber: []
   linePrefab: {fileID: 7308552272877647747, guid: 6ae4745b1a7b90343981f5f8d4fd2aed, type: 3}
+  trailPrefab: {fileID: 0}
   listItem: []
   listRotate: []
   listGrid: []
@@ -6160,6 +6161,7 @@ MonoBehaviour:
   currentIndexGrid: -1
   maxCamera: 10
   timeCountDown: 0
+  timeWaitBlockRotate: 0
   currentGrid: {fileID: 0}
   combo: 0
   listBreakPrefab: []
@@ -7702,6 +7704,7 @@ MonoBehaviour:
   coinMultiple: {fileID: 0}
   coinGet: {fileID: 0}
   coin: {fileID: 0}
+  coinMiddle: {fileID: 0}
   targetTransformCoin: {fileID: 0}
   jumpPower: 0
   durationJump: 0
@@ -9591,7 +9594,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 69f05ea250c01e64a94205eb7b435188, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8f7ebd3b90918f24f9b60929712d4495, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
