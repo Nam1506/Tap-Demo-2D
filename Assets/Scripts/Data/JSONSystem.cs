@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
 using Unity.VisualScripting;
+using UnityEditor.Tilemaps;
 
 public class JSONSystem : MonoBehaviour
 {
@@ -36,7 +37,7 @@ public class JSONSystem : MonoBehaviour
 
     private List<int> listLevelRandom;
 
-    private const int levelMax = 17;
+    private const int levelMax = 100;
     private const int numberRandom = 10;
 
     private void Awake()
@@ -81,10 +82,8 @@ public class JSONSystem : MonoBehaviour
         Data data = new Data();
 
         data.level = int.Parse(levelField.text);
-        data.maxCamera = GameManager.Instance.maxCamera;
         data.maxMap = GameManager.Instance.listGrid.Count;
         data.map = new List<Map>();
-        data.color = dropDown.value;
 
         SaveMap(data);
         string json = JsonConvert.SerializeObject(data);
@@ -187,11 +186,11 @@ public class JSONSystem : MonoBehaviour
         int level = int.Parse(levelField.text);
 
 #if UNITY_EDITOR || UNITY_ANDROID
-        string path = Resources.Load<TextAsset>("Levels/Level" + level).ToString();
+        string path = Resources.Load<TextAsset>("Levels/" + level + "_lvlData").ToString();
         Data data = JsonConvert.DeserializeObject<Data>(path);
         LoadMap(data);
 #else
-        string path = File.ReadAllText("Tap Demo_Data/Resources/Levels/Level" + level + ".json");
+        string path = File.ReadAllText("Tap Demo_Data/Resources/Levels/" + level + "_lvlData.json");
         Data data = JsonConvert.DeserializeObject<Data>(path);
         LoadMap(data);
 #endif
@@ -237,9 +236,128 @@ public class JSONSystem : MonoBehaviour
             tempNumber = level;
         }
 
-        string path = Resources.Load<TextAsset>("Levels/Level" + level).ToString();
+        string path = Resources.Load<TextAsset>("Levels/" + level + "_lvlData").ToString();
 
-        Data data = JsonConvert.DeserializeObject<Data>(path);
+        TempData tempData = JsonConvert.DeserializeObject<TempData>(path);
+
+        Data data = new Data();
+
+        data.level = int.Parse(tempData.Name);
+        data.maxMap = tempData.LayerCount;
+        data.map = new List<Map>();
+
+        for(int i = 0; i < tempData.Grids.Count; i++)
+        {
+            Grid grid = tempData.Grids[i];
+            Map map = new Map();
+
+            map.rows = grid.Height;
+            map.cols = grid.Width;
+            map.move_count = grid.MovesLimit;
+            map.grid = new List<List<int>>();
+            map.grid_number = new List<List<int>>();
+            map.grid_rotate = new List<List<int>>();
+
+            List<int> tempCells = new List<int>();
+
+            for(int j = 0; j < grid.Cells.Count; j++)
+            {
+                if (grid.Cells[j] == 0 || grid.Cells[j] == 1)
+                {
+                    tempCells.Add(-1);
+                }
+                else if (grid.Cells[j] == 2)
+                {
+                    tempCells.Add(1);
+                }
+                else if (grid.Cells[j] == 4)
+                {
+                    tempCells.Add(2);
+                }
+                else if (grid.Cells[j] == 5)
+                {
+                    tempCells.Add(0);
+                }
+                else if (grid.Cells[j] == 7)
+                {
+                    tempCells.Add(5);
+                }
+                else if (grid.Cells[j] == 8)
+                {
+                    tempCells.Add(4);
+                }
+                else
+                {
+                    tempCells.Add(grid.Cells[j]);
+                }
+
+
+                if(tempCells.Count == map.cols)
+                {
+                    List<int> tmp = new List<int>();
+
+                    tmp.AddRange(tempCells);
+
+                    map.grid.Add(tmp);
+                    
+                    tempCells.Clear();
+                }
+
+            }
+
+            for(int j = 0; j < grid.Numbers.Count; j++)
+            {
+
+                if (grid.Numbers[j] == 0)
+                {
+                    tempCells.Add(-1);
+                }
+                else
+                {
+                    tempCells.Add(grid.Numbers[j]);
+                }
+
+                if (tempCells.Count == map.cols)
+                {
+                    List<int> tmp = new List<int>();
+
+                    tmp.AddRange(tempCells);
+
+                    map.grid_number.Add(tmp);
+
+                    tempCells.Clear();
+                }
+            }
+
+            for(int rowP = 0; rowP < map.rows; rowP++)
+            {
+                List<int> innerList = new List<int>();
+                for(int colP = 0; colP < map.cols; colP++)
+                {
+                    innerList.Add(-1);
+                }
+                map.grid_rotate.Add(innerList);
+            }
+
+            for(int j = 0; j < grid.Connections.Count; j++)
+            {
+                Connection connect = grid.Connections[j];
+                
+                for(int k = 0; k < connect.Connects.Count; k++)
+                {
+                    int x = connect.Connects[k] / map.cols;
+                    int y = connect.Connects[k] % map.cols;
+                    map.grid_rotate[x][y] = connect.Index;
+                }
+            }
+
+            data.map.Add(map);
+            
+        }
+
+        string json = JsonConvert.SerializeObject(data);
+
+        File.WriteAllText(Application.dataPath + "/Resources/Levels/Level" + data.level + ".json", json);
 
         LoadMap(data);
 
@@ -262,7 +380,7 @@ public class JSONSystem : MonoBehaviour
 
         if (SceneManager.GetActiveScene().name == gameScene)
         {
-            BlockController.Instance.index = data.color;
+            BlockController.Instance.index = data.level % 4;
             GameManager.Instance.levelText.text = "Level " + data.level.ToString();
             GameManager.Instance.moveText.text = data.map[0].move_count.ToString() + " Moves";
         }
@@ -287,7 +405,7 @@ public class JSONSystem : MonoBehaviour
 
             if (GameManager.Instance.isSceneGame())
             {
-                grid.breakPrefab = GameManager.Instance.listBreakPrefab[data.color];
+                grid.breakPrefab = GameManager.Instance.listBreakPrefab[data.level % 4];
             }
 
             grid.moveCount = map.move_count.ToString();
@@ -393,17 +511,17 @@ public class JSONSystem : MonoBehaviour
                             trail.transform.SetAsLastSibling();
                             TrailRenderer trailRenderer = trail.GetComponent<TrailRenderer>();
 
-                            if (data.color == 0)
+                            if (data.level % 4 == 0)
                             {
                                 trailRenderer.startColor = HexToRGBA("68E0B8");
                                 trailRenderer.endColor = HexToRGBA("5CACFD");
                             }
-                            else if (data.color == 1)
+                            else if (data.level % 4 == 1)
                             {
                                 trailRenderer.startColor = HexToRGBA("8DF151");
                                 trailRenderer.endColor = HexToRGBA("61ABFF");
                             }
-                            else if (data.color == 2)
+                            else if (data.level % 4 == 2)
                             {
                                 trailRenderer.startColor = HexToRGBA("FC818B");
                                 trailRenderer.endColor = HexToRGBA("E97634");

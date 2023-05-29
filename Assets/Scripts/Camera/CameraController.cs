@@ -69,7 +69,7 @@ public class CameraController : MonoBehaviour
         float panelBotHeight = (panelBot.sizeDelta.y) * canva.scaleFactor;
         float panelMidHeight = (panelMid.sizeDelta.y) * canva.scaleFactor;
 
-        float screenWidth = (float)(Screen.width - 80f) / CameraExtension.PixelsPerUnit(Camera.main);
+        float screenWidth = (float)(Screen.width - 160f) / CameraExtension.PixelsPerUnit(Camera.main);
         float screenHeight = (float)(Screen.height - (panelTopHeight + panelBotHeight)) / CameraExtension.PixelsPerUnit(Camera.main);
 
         float widthSize = screenWidth / maxHorizontalSize;

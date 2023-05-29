@@ -1,14 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.MemoryProfiler;
+using UnityEditor.Tilemaps;
 using UnityEngine;
 
 public class Data
 {
     public int level;
-    public float maxCamera;
     public int maxMap;
     public List<Map> map;
-    public int color;
 }
 
 public class Map
@@ -18,5 +18,27 @@ public class Map
     public List<List<int>> grid;
     public List<List<int>> grid_number;
     public List<List<int>> grid_rotate;
+}
 
+public class TempData
+{
+    public string Name;
+    public int LayerCount;
+    public List<Grid> Grids;
+}
+
+public class Grid
+{
+    public int Width;
+    public int Height;
+    public int MovesLimit;
+    public List<int> Cells;
+    public List<int> Numbers;
+    public List<Connection> Connections;
+}
+
+public class Connection
+{
+    public int Index;
+    public List<int> Connects;
 }
