@@ -70,6 +70,8 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI remainAddMove;
     public Tween myTween;
 
+    public List<GameObject> cantBoom;
+
     private void Awake()
     {
         Application.runInBackground = false;
@@ -406,9 +408,31 @@ public class GameManager : MonoBehaviour
             boomClicking = true;
             addBoomMask.GetComponent<Image>().enabled = true;
 
+            for(int i = 0; i < currentGrid.listRotate.Count; i++)
+            {
+                TileSlot tileSlot = currentGrid.listRotate[i].GetComponent<TileSlot>();
+
+                for(int j = -1; j <= 1; j++)
+                {
+                    for(int k = -1; k <= 1; k++)
+                    {
+                        int x = tileSlot.rowPos + j;
+                        int y = tileSlot.colPos + k;
+
+                        if(x < 0 || x >= currentGrid.rows || y < 0 || y >= currentGrid.cols)
+                        {
+                            continue;
+                        }
+
+                        cantBoom.Add(currentGrid.GetTileSlot(x, y));
+                    }
+                }
+            }
+
+
             foreach(TileSlot tileSlot in currentGrid.GetComponentsInChildren<TileSlot>())
             {
-                if(tileSlot.transform.childCount == 0)
+                if(tileSlot.transform.childCount == 0 && !cantBoom.Contains(tileSlot.gameObject))
                 {
                     tileSlot.gameObject.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 1);
                 }
@@ -419,6 +443,7 @@ public class GameManager : MonoBehaviour
         else
         {
             boomClicking = false;
+            cantBoom.Clear();
 
             foreach (TileSlot tileSlot in currentGrid.GetComponentsInChildren<TileSlot>())
             {

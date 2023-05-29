@@ -8,7 +8,6 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using Sirenix.OdinInspector;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
 using Unity.VisualScripting;
 
 public class TileSlot : MonoBehaviour
@@ -85,7 +84,13 @@ public class TileSlot : MonoBehaviour
             if (GameManager.Instance.boomClicking)
             {
                 GameObject itemm = Instantiate(JSONSystem.Instance.boomObject, this.transform);
+                GameManager.Instance.boomClicking = false;
+                GameManager.Instance.addBoomMask.GetComponent<Image>().enabled = false;
 
+                foreach (TileSlot tileSlot in GameManager.Instance.currentGrid.GetComponentsInChildren<TileSlot>())
+                {
+                    tileSlot.gameObject.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 0);
+                }
             }
 
             return;
@@ -165,7 +170,7 @@ public class TileSlot : MonoBehaviour
             }
 
             GameManager.Instance.combo++;
-            AudioManager.Instance.sfxSource2.pitch += 0.1f;
+            AudioManager.Instance.sfxSource2.pitch += 0.05f;
             GameManager.Instance.currentGrid.DecreamentNumber();
         }
 
@@ -690,6 +695,8 @@ public class TileSlot : MonoBehaviour
                                             if (isNextTo)
                                             {
 
+                                                target.boxTileSlot.enabled = true;
+
                                                 Destroy(moveBlock.gameObject);
 
                                                 AudioManager.Instance.PlaySFX1("Break");
@@ -713,6 +720,8 @@ public class TileSlot : MonoBehaviour
                                             {
                                                 DOVirtual.DelayedCall(duration, () =>
                                                 {
+                                                    target.boxTileSlot.enabled = true;
+
                                                     AudioManager.Instance.PlaySFX1("Break");
 
                                                     Destroy(moveBlock.gameObject);
@@ -745,6 +754,9 @@ public class TileSlot : MonoBehaviour
                                                 explosionPre.transform.position = colorTileSlot.transform.position;
                                                 AudioManager.Instance.PlaySFX1("Explosion");
 
+                                                target.boxTileSlot.enabled = true;
+
+
                                                 GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
                                                 breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
@@ -770,6 +782,8 @@ public class TileSlot : MonoBehaviour
                                             {
                                                 DOVirtual.DelayedCall(duration, () =>
                                                 {
+                                                    target.boxTileSlot.enabled = true;
+
                                                     AudioManager.Instance.PlaySFX1("Explosion");
 
                                                     GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
@@ -792,7 +806,7 @@ public class TileSlot : MonoBehaviour
                                                     DOVirtual.DelayedCall(1f, () =>
                                                     {
                                                         Destroy(explosionPre.gameObject);
-                                                        
+
                                                     });
                                                 });
                                             }
@@ -1086,6 +1100,8 @@ public class TileSlot : MonoBehaviour
 
                                         if (isNextTo)
                                         {
+                                            target.boxTileSlot.enabled = true;
+
                                             AudioManager.Instance.PlaySFX1("Break");
 
 
@@ -1110,6 +1126,9 @@ public class TileSlot : MonoBehaviour
                                         {
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
+                                                target.boxTileSlot.enabled = true;
+
+
                                                 AudioManager.Instance.PlaySFX1("Break");
 
                                                 Destroy(moveBlock.gameObject);
@@ -1140,6 +1159,9 @@ public class TileSlot : MonoBehaviour
                                         {
                                             AudioManager.Instance.PlaySFX1("Explosion");
 
+                                            target.boxTileSlot.enabled = true;
+
+
                                             GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
                                             breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
@@ -1169,6 +1191,9 @@ public class TileSlot : MonoBehaviour
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
                                                 AudioManager.Instance.PlaySFX1("Explosion");
+
+                                                target.boxTileSlot.enabled = true;
+
 
                                                 GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
@@ -1480,6 +1505,8 @@ public class TileSlot : MonoBehaviour
 
                                         if (isNextTo)
                                         {
+                                            target.boxTileSlot.enabled = true;
+
 
                                             AudioManager.Instance.PlaySFX1("Break");
 
@@ -1505,6 +1532,9 @@ public class TileSlot : MonoBehaviour
 
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
+                                                target.boxTileSlot.enabled = true;
+
+
                                                 AudioManager.Instance.PlaySFX1("Break");
 
                                                 Destroy(moveBlock.gameObject);
@@ -1533,6 +1563,8 @@ public class TileSlot : MonoBehaviour
                                         {
                                             AudioManager.Instance.PlaySFX1("Explosion");
 
+                                            target.boxTileSlot.enabled = true;
+
                                             GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
                                             breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
@@ -1553,7 +1585,6 @@ public class TileSlot : MonoBehaviour
                                             {
                                                 Destroy(explosionPre.gameObject);
 
-                                                target.boxTileSlot.enabled = true;
                                             });
 
                                             Explosion(rowPos, posY - 1);
@@ -1565,6 +1596,9 @@ public class TileSlot : MonoBehaviour
                                             {
                                                 AudioManager.Instance.PlaySFX1("Explosion");
 
+
+                                                target.boxTileSlot.enabled = true;
+
                                                 GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
                                                 breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
@@ -1575,6 +1609,7 @@ public class TileSlot : MonoBehaviour
 
                                                 DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
                                                 {
+
                                                     Destroy(breakPre.gameObject);
                                                 });
 
@@ -1585,7 +1620,6 @@ public class TileSlot : MonoBehaviour
                                                 DOVirtual.DelayedCall(1f, () =>
                                                 {
                                                     Destroy(explosionPre.gameObject);
-                                                    target.boxTileSlot.enabled = true;
 
                                                 });
                                             });
@@ -1886,6 +1920,9 @@ public class TileSlot : MonoBehaviour
 
                                         if (isNextTo)
                                         {
+                                            target.boxTileSlot.enabled = true;
+
+
                                             AudioManager.Instance.PlaySFX1("Break");
 
                                             Destroy(moveBlock.gameObject);
@@ -1910,6 +1947,9 @@ public class TileSlot : MonoBehaviour
 
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
+                                                target.boxTileSlot.enabled = true;
+
+
                                                 AudioManager.Instance.PlaySFX1("Break");
 
                                                 Destroy(moveBlock.gameObject);
@@ -1938,6 +1978,9 @@ public class TileSlot : MonoBehaviour
                                         if (isNextTo)
                                         {
                                             AudioManager.Instance.PlaySFX1("Explosion");
+
+                                            target.boxTileSlot.enabled = true;
+
 
                                             GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
@@ -1970,6 +2013,8 @@ public class TileSlot : MonoBehaviour
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
                                                 GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                                target.boxTileSlot.enabled = true;
 
                                                 breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
 
@@ -2528,18 +2573,15 @@ public class TileSlot : MonoBehaviour
         bool haveDown = downItems.Count == 0 ? false : true;
         bool haveLeft = leftItems.Count == 0 ? false : true;
 
-
-
-
         if (haveUp)
         {
             bool check = true;
-
+            bool haveSaw = false;
             foreach (Item item in upItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -2555,6 +2597,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = this.rowPos - slot.GetComponent<TileSlot>().rowPos;
 
+                if (this.colPos + index >= GameManager.Instance.currentGrid.cols)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos, this.colPos + index);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -2568,11 +2616,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow()) 
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2593,12 +2653,13 @@ public class TileSlot : MonoBehaviour
         if (haveRight)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in rightItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -2614,6 +2675,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = slot.GetComponent<TileSlot>().colPos - this.colPos;
 
+                if (this.rowPos + index >= GameManager.Instance.currentGrid.rows)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos + index, this.colPos);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -2627,15 +2694,26 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
                         }
+
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
+                        }
+
                     }
                 }
 
@@ -2655,12 +2733,13 @@ public class TileSlot : MonoBehaviour
         if (haveDown)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in downItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -2676,6 +2755,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = slot.GetComponent<TileSlot>().rowPos - this.rowPos;
 
+                if (this.colPos - index < 0)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos, this.colPos - index);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -2689,14 +2774,24 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                check = false;
+                                break;
+                            }
                         }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
+                        }
+
                     }
                 }
 
@@ -2716,12 +2811,13 @@ public class TileSlot : MonoBehaviour
         if (haveLeft)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in leftItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -2737,6 +2833,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = this.colPos - slot.GetComponent<TileSlot>().colPos;
 
+                if (this.rowPos - index < 0)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos - index, this.colPos);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -2750,13 +2852,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2774,7 +2886,10 @@ public class TileSlot : MonoBehaviour
             _90_left = true;
         }
 
-
+        Debug.Log("_90_up: " + _90_up);
+        Debug.Log("_90_right: " + _90_right);
+        Debug.Log("_90_down: " + _90_down);
+        Debug.Log("_90_left: " + _90_left);
 
         if (_90_up && _90_right && _90_down && _90_left)
         {
@@ -2787,12 +2902,13 @@ public class TileSlot : MonoBehaviour
         if (haveUp)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in upItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -2808,6 +2924,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = this.rowPos - slot.GetComponent<TileSlot>().rowPos;
 
+                if (this.rowPos + index >= GameManager.Instance.currentGrid.rows)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos + index, this.colPos);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -2821,12 +2943,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2847,12 +2980,13 @@ public class TileSlot : MonoBehaviour
         if (haveRight)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in rightItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -2868,6 +3002,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = slot.GetComponent<TileSlot>().colPos - this.colPos;
 
+                if (this.colPos - index < 0)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos, this.colPos - index);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -2881,12 +3021,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2907,12 +3058,13 @@ public class TileSlot : MonoBehaviour
         if (haveDown)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in downItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -2928,6 +3080,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = slot.GetComponent<TileSlot>().rowPos - this.rowPos;
 
+                if (this.rowPos - index < 0)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos - index, this.colPos);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -2941,12 +3099,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2967,12 +3136,13 @@ public class TileSlot : MonoBehaviour
         if (haveLeft)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in leftItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -2988,6 +3158,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = this.colPos - slot.GetComponent<TileSlot>().colPos;
 
+                if (this.colPos + index >= GameManager.Instance.currentGrid.cols)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos, this.colPos + index);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -3001,12 +3177,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -3034,12 +3221,13 @@ public class TileSlot : MonoBehaviour
         if (haveUp)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in upItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -3055,6 +3243,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = this.rowPos - slot.GetComponent<TileSlot>().rowPos;
 
+                if (this.colPos - index < 0)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos, this.colPos - index);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -3068,12 +3262,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -3094,12 +3299,13 @@ public class TileSlot : MonoBehaviour
         if (haveRight)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in rightItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -3115,6 +3321,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = slot.GetComponent<TileSlot>().colPos - this.colPos;
 
+                if (this.rowPos - index < 0)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos - index, this.colPos);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -3128,12 +3340,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -3154,12 +3377,13 @@ public class TileSlot : MonoBehaviour
         if (haveDown)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in downItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -3175,6 +3399,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = slot.GetComponent<TileSlot>().rowPos - this.rowPos;
 
+                if (this.colPos + index > GameManager.Instance.currentGrid.cols)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos, this.colPos + index);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -3188,12 +3418,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -3214,12 +3455,13 @@ public class TileSlot : MonoBehaviour
         if (haveLeft)
         {
             bool check = true;
+            bool haveSaw = false;
 
             foreach (Item item in leftItems)
             {
                 if (item.type == item.saw)
                 {
-                    continue;
+                    haveSaw = true;
                 }
 
                 GameObject slot;
@@ -3235,6 +3477,12 @@ public class TileSlot : MonoBehaviour
 
                 int index = this.colPos - slot.GetComponent<TileSlot>().colPos;
 
+                if (this.rowPos + index >= GameManager.Instance.currentGrid.rows)
+                {
+                    check = false;
+                    break;
+                }
+
                 GameObject targetSlot = gridManager.GetTileSlot(this.rowPos + index, this.colPos);
 
                 if (targetSlot.GetComponentInChildren<Item>() != null)
@@ -3248,12 +3496,23 @@ public class TileSlot : MonoBehaviour
 
                     else
                     {
-                        if (targetItem.type != item.saw)
+                        if (targetItem.isArrow())
                         {
-                            GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
-
-                            check = false;
-                            break;
+                            if (!haveSaw)
+                            {
+                                GameManager.Instance.currentGrid.blockedTile = targetItem.transform.parent.gameObject;
+                                Debug.Log("Enter1");
+                                check = false;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (haveSaw)
+                            {
+                                check = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -3282,10 +3541,7 @@ public class TileSlot : MonoBehaviour
         Debug.Log("haveLeft: " + haveLeft);
 
 
-        Debug.Log("_90_up: " + _90_up);
-        Debug.Log("_90_right: " + _90_right);
-        Debug.Log("_90_down: " + _90_down);
-        Debug.Log("_90_left: " + _90_left);
+        
 
 
         return 0;
@@ -3752,7 +4008,6 @@ public class TileSlot : MonoBehaviour
     {
         float angle = 0f;
         Vector3 offset = block.transform.position - centerPos;
-        Debug.Log("Centerpos1: " + centerPos);
 
         GameManager.Instance.isRotating = true;
         float zOriginal = block.GetComponentInChildren<LineRenderer>().GetPosition(1).z;
@@ -3762,7 +4017,7 @@ public class TileSlot : MonoBehaviour
 
         Cover cover = this.GetComponentInChildren<Cover>();
 
-        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.2f);
+        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.5f);
 
         if (block.GetComponentInChildren<TrailRenderer>() != null)
         {
@@ -3772,7 +4027,6 @@ public class TileSlot : MonoBehaviour
 
         centerPos = new Vector3(centerPos.x, centerPos.y + GameManager.Instance.heightRotate, centerPos.z);
 
-        Debug.Log("Centerpos2: " + centerPos);
         bool stop = false;
 
 
@@ -3785,10 +4039,16 @@ public class TileSlot : MonoBehaviour
 
         block.transform.DOMoveY(block.transform.position.y + GameManager.Instance.heightRotate, GameManager.Instance.timeHeightRotate);
 
+        if (block.GetComponent<Item>() != null)
+        {
+            GameObject shadow = block.GetComponent<Item>().shadow;
+            shadow.transform.DOMoveY(shadow.transform.position.y + GameManager.Instance.heightRotate, GameManager.Instance.timeHeightRotate);
+        }
+
         while (!stop)
         {
-            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal));
-            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal - 0.5f));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal - 0.5f));
             yield return null;
         }
 
@@ -3798,9 +4058,9 @@ public class TileSlot : MonoBehaviour
 
             Vector3 newPos = centerPos + Quaternion.Euler(0, 0, -angle) * offset;
 
-            block.transform.position = new Vector3(newPos.x, newPos.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.2f);
+            block.transform.position = new Vector3(newPos.x, newPos.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.5f);
 
-            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal - 0.5f));
 
             if (block.GetComponent<Item>() != null)
             {
@@ -3816,9 +4076,15 @@ public class TileSlot : MonoBehaviour
 
         Vector3 newPos1 = centerPos + Quaternion.Euler(0, 0, -anglePoint) * offset;
 
-        block.transform.position = new Vector3(newPos1.x, newPos1.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.2f);
+        block.transform.position = new Vector3(newPos1.x, newPos1.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.5f);
 
         block.GetComponentInChildren<LineRenderer>().SetPosition(0, block.transform.position);
+
+        if(block.GetComponent<Item>() != null)
+        {
+            GameObject shadow = block.GetComponent<Item>().shadow;
+            shadow.transform.position = new Vector3(block.transform.position.x, block.transform.position.y - 0.1f, shadow.transform.position.z);
+        }
 
         stop = false;
 
@@ -3840,16 +4106,24 @@ public class TileSlot : MonoBehaviour
 
                 });
             block.transform.DOMoveY(block.transform.position.y - GameManager.Instance.heightRotate, GameManager.Instance.timeHeightRotate);
+            if (block.GetComponent<Item>() != null)
+            {
+                GameObject shadow = block.GetComponent<Item>().shadow;
+                shadow.transform.DOMoveY(shadow.transform.position.y - GameManager.Instance.heightRotate, GameManager.Instance.timeHeightRotate);
+            }
 
         });
 
 
         while (!stop)
         {
-            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal));
-            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal - 0.5f));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal - 0.5f));
             yield return null;
         }
+
+        block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal));
+        block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal));
 
         bool checkBlock = true;
 
@@ -3857,34 +4131,41 @@ public class TileSlot : MonoBehaviour
         {
             bool checkBreak = false;
 
-            foreach (Transform transform in targetSlot.transform)
+            if (targetSlot.GetComponentInChildren<Item>() != null)
             {
-                if (targetSlot.transform.childCount != 0)
+                Item itemPref = targetSlot.GetComponentInChildren<Item>();
+                if (!dictionary["Up"].Contains(itemPref) && !dictionary["Right"].Contains(itemPref) && !dictionary["Down"].Contains(itemPref) && !dictionary["Left"].Contains(itemPref))
                 {
-                    Item temp = targetSlot.GetComponentInChildren<Item>();
-                    GameManager.Instance.currentGrid.listItem.Remove(temp.gameObject);
-                    checkBreak = true;
+                    foreach (Transform transform in targetSlot.transform)
+                    {
+                        if (targetSlot.transform.childCount != 0)
+                        {
+                            Item temp = targetSlot.GetComponentInChildren<Item>();
+                            GameManager.Instance.currentGrid.listItem.Remove(temp.gameObject);
+                            checkBreak = true;
+                        }
+
+                        Destroy(transform.gameObject);
+                    }
+
+                    if (checkBreak)
+                    {
+                        AudioManager.Instance.PlaySFX1("Break");
+
+                        GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                        breakPre.transform.position = new Vector3(targetSlot.transform.position.x, targetSlot.transform.position.y, targetSlot.transform.position.z);
+
+                        ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                        float timeBreak = main.duration;
+
+                        DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                        {
+                            Destroy(breakPre.gameObject);
+                        });
+                    }
                 }
-
-                Destroy(transform.gameObject);
-            }
-
-            if (checkBreak)
-            {
-                AudioManager.Instance.PlaySFX1("Break");
-
-                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
-
-                breakPre.transform.position = new Vector3(targetSlot.transform.position.x, targetSlot.transform.position.y, targetSlot.transform.position.z);
-
-                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
-
-                float timeBreak = main.duration;
-
-                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
-                {
-                    Destroy(breakPre.gameObject);
-                });
             }
 
         }
@@ -3953,7 +4234,6 @@ public class TileSlot : MonoBehaviour
             block.transform.localPosition = Vector3.zero;
             float z = block.GetComponentInChildren<LineRenderer>().GetPosition(1).z;
 
-            Debug.Log("Z: " + z);
             block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, z));
         }
 

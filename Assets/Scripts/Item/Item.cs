@@ -65,6 +65,12 @@ public class Item : MonoBehaviour
 
     public string GetNameSprite()
     {
+
+        if(type == "Boom")
+        {
+            return boom;
+        }
+
         return spriteRenderer.sprite.name;
     }
 
