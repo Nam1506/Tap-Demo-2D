@@ -104,13 +104,12 @@ MonoBehaviour:
   item: {fileID: 0}
   container: {fileID: 0}
   ease: 5
-  speed: 40
+  speed: 20
   canMove: 1
   haveBoom: 0
   boxTileSlot: {fileID: 8733833981379160206}
-  speedRotate: 500
+  speedRotate: 400
   rotateParent: {fileID: 0}
-  timeRotate: 0.1
   timeScaleBlock: 0.08
   targetScaleBlock: 0.7
 --- !u!61 &8733833981379160206

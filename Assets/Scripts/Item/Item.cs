@@ -15,6 +15,10 @@ public class Item : MonoBehaviour
 
     public TileSlot rotateController;
 
+    public GameObject shadow;
+
+    public GameObject cover;
+
     // -----Config-----
 
     public string up = "Up";
@@ -42,8 +46,14 @@ public class Item : MonoBehaviour
         {
             return;
         }
+        if(spriteRenderer == null)
+        {
+            type = "Boom";
+            return;
+        }
 
         type = GetNameSprite();
+
 
         if (this.GetNameSprite() == saw)
         {

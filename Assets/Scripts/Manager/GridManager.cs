@@ -29,6 +29,7 @@ public class GridManager : MonoBehaviour
     public List<GameObject> listHiddenNumber;
     public GameObject blockedTile;
     public GameObject mask;
+    public GameObject shadowSaw;
 
     public bool haveSaw;
     public string moveCount;
@@ -36,7 +37,7 @@ public class GridManager : MonoBehaviour
     public GameObject breakPrefab;
 
     [SerializeField] float TIME_FADE_HIDDEN;
-    [SerializeField] TextMeshProUGUI moveText;
+    public TextMeshProUGUI moveText;
     public bool checkRotation = false;
 
     public Color startColor;

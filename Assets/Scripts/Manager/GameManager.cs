@@ -6,6 +6,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 
 
@@ -42,6 +43,8 @@ public class GameManager : MonoBehaviour
     public float maxCamera = 10f;
     public float timeCountDown;
     public float timeWaitBlockRotate;
+    public float heightRotate;
+    public float timeHeightRotate;
 
 
     public GridManager currentGrid;
@@ -51,6 +54,21 @@ public class GameManager : MonoBehaviour
     public List<GameObject> listBreakPrefab;
     public GameObject explosionPrefab;
 
+    public GameObject addMoveMask;
+    public GameObject addBoomMask;
+
+    public GameObject addMove;
+    public GameObject addBoom;
+
+    [HideInInspector] public bool moveClicking = false;
+    [HideInInspector] public bool boomClicking = false;
+
+    public float startScale;
+    public float endScale;
+    public float durationScale;
+
+    public TextMeshProUGUI remainAddMove;
+    public Tween myTween;
 
     private void Awake()
     {
@@ -66,6 +84,9 @@ public class GameManager : MonoBehaviour
     {
         if (isSceneGame())
         {
+            StartScaleEffect(addMove);
+            StartScaleEffect(addBoom);
+
 
             AudioManager.Instance.PlayMusic("BG");
 
@@ -115,6 +136,15 @@ public class GameManager : MonoBehaviour
         return SceneManager.GetActiveScene().name == JSONSystem.Instance.gameScene;
     }
 
+    private void StartScaleEffect(GameObject gameObject)
+    {
+        gameObject.GetComponent<RectTransform>().DOScale(endScale, durationScale).SetEase(Ease.OutBack)
+            .OnComplete(() =>
+            {
+                gameObject.GetComponent<RectTransform>().DOScale(startScale, durationScale).SetEase(Ease.InBack);
+            }).SetLoops(-1, LoopType.Yoyo);
+    }
+        
     public void NewMapButton()
     {
 
@@ -347,6 +377,8 @@ public class GameManager : MonoBehaviour
             Destroy(grid.gameObject);
         }
 
+        DOTween.KillAll();
+
         AudioManager.Instance.sfxSource2.pitch = 1;
         GameManager.Instance.combo = 0;
 
@@ -365,106 +397,49 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    //public bool CheckLoseGame()
-    //{
+    public void AddBoomButton()
+    {
+        addBoomMask.GetComponent<Image>().enabled = false;
 
-    //    Debug.Log("listItem.Count: " + listItem.Count);
+        if (!boomClicking)
+        {
+            boomClicking = true;
+            addBoomMask.GetComponent<Image>().enabled = true;
 
-    //    if (listItem.Count == 0)
-    //    {
-    //        return false;
-    //    }
+            foreach(TileSlot tileSlot in currentGrid.GetComponentsInChildren<TileSlot>())
+            {
+                if(tileSlot.transform.childCount == 0)
+                {
+                    tileSlot.gameObject.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 1);
+                }
+            }
 
-    //    if (int.Parse(GetMovesCount()) == 0)
-    //    {
-    //        return true;
-    //    }
-    //    Debug.Log("listRotateCount: " + listRotate.Count);
+        }
 
-    //    for (int i = 0; i < listRotate.Count; i++)
-    //    {
-    //        Debug.Log("Enter1");
+        else
+        {
+            boomClicking = false;
 
-    //        GameObject rotateSlot = listRotate[i];
-    //        TileSlot rotateTileSlot = rotateSlot.GetComponent<TileSlot>();
+            foreach (TileSlot tileSlot in currentGrid.GetComponentsInChildren<TileSlot>())
+            {
+                    tileSlot.gameObject.GetComponent<SpriteRenderer>().color = new Color(0, 0, 0, 0);
+            }
+        }
+    }
 
-    //        if (rotateTileSlot.dictionary["Up"].Count == 0 && rotateTileSlot.dictionary["Right"].Count == 0 && rotateTileSlot.dictionary["Down"].Count == 0 && rotateTileSlot.dictionary["Left"].Count == 0)
-    //        {
-    //            break;
-    //        }
+    public void AddMoveButton()
+    {
+        int remainMove = int.Parse(remainAddMove.text);
 
+        if(remainMove > 0)
+        {
+            remainMove--;
+            remainAddMove.text = remainMove.ToString();
 
-    //        if (rotateTileSlot.CheckRotate() != 0)
-    //        {
-    //            return false;
-    //        }
+            currentGrid.moveCount = (int.Parse(currentGrid.moveCount) + 1).ToString();
+            currentGrid.moveText.text = currentGrid.moveCount + " Moves";
 
-    //        Debug.Log("Enter2");
-    //    }
-
-    //    for (int i = 0; i < listItem.Count; i++)
-    //    {
-
-    //        GameObject tileSlotGO = listItem[i].transform.parent.parent.gameObject;
-
-
-    //        if (tileSlotGO.transform.childCount != 1)
-    //        {
-    //            continue;
-    //        }
-
-
-    //        TileSlot tileSlot = tileSlotGO.GetComponent<TileSlot>();
-
-    //        Item item = listItem[i].GetComponent<Item>();
-
-
-    //        string typeItem = item.type;
-
-    //        tileSlot.item = item;
-    //        tileSlot.container = listItem[i].transform.parent.gameObject;
-
-
-    //        if (typeItem == Item.Instance.up)
-    //        {
-
-    //            if (tileSlot.CheckUpDirection())
-    //            {
-    //                return false;
-    //            }
-    //        }
-
-    //        if (typeItem == Item.Instance.down)
-    //        {
-    //            if (tileSlot.CheckDownDirection())
-    //            {
-    //                return false;
-
-    //            }
-    //        }
-
-    //        if (typeItem == Item.Instance.left)
-    //        {
-
-    //            if (tileSlot.CheckLeftDirection())
-    //            {
-    //                return false;
-    //            }
-    //        }
-
-    //        if (typeItem == Item.Instance.right)
-    //        {
-
-    //            if (tileSlot.CheckRightDirection())
-    //            {
-    //                return false;
-    //            }
-
-    //        }
-    //    }
-
-    //    return true;
-
-    //}
+        }
+    }
 
 }

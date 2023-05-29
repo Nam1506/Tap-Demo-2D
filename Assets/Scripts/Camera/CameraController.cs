@@ -10,6 +10,7 @@ public class CameraController : MonoBehaviour
     private float screenHeightOriginial;
     [SerializeField] RectTransform panelTop;
     [SerializeField] RectTransform panelBot;
+    [SerializeField] RectTransform panelMid;
     [SerializeField] Canvas canva;
 
     private void Awake()
@@ -64,8 +65,9 @@ public class CameraController : MonoBehaviour
         float maxHorizontalSize = gridManager.cols;
         float maxVerticalSize = gridManager.rows;
 
-        float panelTopHeight = (panelTop.sizeDelta.y + 30) * canva.scaleFactor;
-        float panelBotHeight = (panelBot.sizeDelta.y + 30) * canva.scaleFactor;
+        float panelTopHeight = (panelTop.sizeDelta.y) * canva.scaleFactor;
+        float panelBotHeight = (panelBot.sizeDelta.y) * canva.scaleFactor;
+        float panelMidHeight = (panelMid.sizeDelta.y) * canva.scaleFactor;
 
         float screenWidth = (float)(Screen.width - 80f) / CameraExtension.PixelsPerUnit(Camera.main);
         float screenHeight = (float)(Screen.height - (panelTopHeight + panelBotHeight)) / CameraExtension.PixelsPerUnit(Camera.main);

@@ -110,4 +110,4 @@ MonoBehaviour:
   boom: Boom
   rotate: Rotate
   hidden: Hidden
-  duration_rotate: 0.5
+  duration_rotate: 2

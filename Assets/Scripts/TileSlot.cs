@@ -36,7 +36,6 @@ public class TileSlot : MonoBehaviour
 
     public GameObject rotateParent;
 
-    [SerializeField] float timeRotate;
     [SerializeField] float timeScaleBlock;
     [SerializeField] float targetScaleBlock;
 
@@ -60,26 +59,35 @@ public class TileSlot : MonoBehaviour
 
     private void OnMouseDown()
     {
-
+        Debug.Log("1");
         if (!GameManager.Instance.isSceneGame())
         {
             return;
         }
+        Debug.Log("1");
 
         if (GameManager.Instance.state == GameManager.State.Pause)
         {
             return;
         }
 
+        Debug.Log("1");
 
         if (GameManager.Instance.currentGrid.moveCount == "0")
         {
             return;
         }
+        Debug.Log("1");
 
 
         if (this.transform.childCount != 1)
         {
+            if (GameManager.Instance.boomClicking)
+            {
+                GameObject itemm = Instantiate(JSONSystem.Instance.boomObject, this.transform);
+
+            }
+
             return;
         }
 
@@ -87,6 +95,7 @@ public class TileSlot : MonoBehaviour
         {
             return;
         }
+        Debug.Log("1");
 
         haveBoom = false;
 
@@ -736,6 +745,18 @@ public class TileSlot : MonoBehaviour
                                                 explosionPre.transform.position = colorTileSlot.transform.position;
                                                 AudioManager.Instance.PlaySFX1("Explosion");
 
+                                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                                float timeBreak = main.duration;
+
+                                                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                                                {
+                                                    Destroy(breakPre.gameObject);
+                                                });
 
                                                 DOVirtual.DelayedCall(1f, () =>
                                                 {
@@ -751,6 +772,19 @@ public class TileSlot : MonoBehaviour
                                                 {
                                                     AudioManager.Instance.PlaySFX1("Explosion");
 
+                                                    GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                                    breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                                    ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                                    float timeBreak = main.duration;
+
+                                                    DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                                                    {
+                                                        Destroy(breakPre.gameObject);
+                                                    });
+
                                                     GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                                     explosionPre.transform.position = colorTileSlot.transform.position;
                                                     Explosion(posX - 1, colPos);
@@ -758,7 +792,7 @@ public class TileSlot : MonoBehaviour
                                                     DOVirtual.DelayedCall(1f, () =>
                                                     {
                                                         Destroy(explosionPre.gameObject);
-
+                                                        
                                                     });
                                                 });
                                             }
@@ -1106,6 +1140,19 @@ public class TileSlot : MonoBehaviour
                                         {
                                             AudioManager.Instance.PlaySFX1("Explosion");
 
+                                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                            float timeBreak = main.duration;
+
+                                            DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                                            {
+                                                Destroy(breakPre.gameObject);
+                                            });
+
                                             GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                             explosionPre.transform.position = colorTileSlot.transform.position;
 
@@ -1122,6 +1169,19 @@ public class TileSlot : MonoBehaviour
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
                                                 AudioManager.Instance.PlaySFX1("Explosion");
+
+                                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                                float timeBreak = main.duration;
+
+                                                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                                                {
+                                                    Destroy(breakPre.gameObject);
+                                                });
 
                                                 GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                                 explosionPre.transform.position = colorTileSlot.transform.position;
@@ -1442,7 +1502,7 @@ public class TileSlot : MonoBehaviour
 
                                         else
                                         {
-                                            
+
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
                                                 AudioManager.Instance.PlaySFX1("Break");
@@ -1473,12 +1533,27 @@ public class TileSlot : MonoBehaviour
                                         {
                                             AudioManager.Instance.PlaySFX1("Explosion");
 
+                                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                            float timeBreak = main.duration;
+
+                                            DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                                            {
+                                                Destroy(breakPre.gameObject);
+                                            });
+
                                             GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                             explosionPre.transform.position = colorTileSlot.transform.position;
 
                                             DOVirtual.DelayedCall(1f, () =>
                                             {
                                                 Destroy(explosionPre.gameObject);
+
+                                                target.boxTileSlot.enabled = true;
                                             });
 
                                             Explosion(rowPos, posY - 1);
@@ -1490,6 +1565,19 @@ public class TileSlot : MonoBehaviour
                                             {
                                                 AudioManager.Instance.PlaySFX1("Explosion");
 
+                                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                                float timeBreak = main.duration;
+
+                                                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                                                {
+                                                    Destroy(breakPre.gameObject);
+                                                });
+
                                                 GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                                 explosionPre.transform.position = colorTileSlot.transform.position;
                                                 Explosion(rowPos, posY - 1);
@@ -1497,6 +1585,7 @@ public class TileSlot : MonoBehaviour
                                                 DOVirtual.DelayedCall(1f, () =>
                                                 {
                                                     Destroy(explosionPre.gameObject);
+                                                    target.boxTileSlot.enabled = true;
 
                                                 });
                                             });
@@ -1850,6 +1939,19 @@ public class TileSlot : MonoBehaviour
                                         {
                                             AudioManager.Instance.PlaySFX1("Explosion");
 
+                                            GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                            breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                            ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                            float timeBreak = main.duration;
+
+                                            DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                                            {
+                                                Destroy(breakPre.gameObject);
+                                            });
+
                                             GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                             explosionPre.transform.position = colorTileSlot.transform.position;
 
@@ -1867,6 +1969,19 @@ public class TileSlot : MonoBehaviour
 
                                             DOVirtual.DelayedCall(duration, () =>
                                             {
+                                                GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                                                breakPre.transform.position = new Vector3(targetTileSlot.transform.position.x, targetTileSlot.transform.position.y, targetTileSlot.transform.position.z);
+
+                                                ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                                                float timeBreak = main.duration;
+
+                                                DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                                                {
+                                                    Destroy(breakPre.gameObject);
+                                                });
+
                                                 GameObject explosionPre = Instantiate(GameManager.Instance.explosionPrefab);
                                                 explosionPre.transform.position = colorTileSlot.transform.position;
                                                 Explosion(rowPos, posY + 1);
@@ -2239,6 +2354,19 @@ public class TileSlot : MonoBehaviour
 
                     if (prefab.transform.GetChild(0).childCount != 0)
                     {
+                        GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                        breakPre.transform.position = new Vector3(prefab.transform.position.x, prefab.transform.position.y, prefab.transform.position.z);
+
+                        ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                        float timeBreak = main.duration;
+
+                        DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                        {
+                            Destroy(breakPre.gameObject);
+                        });
+
                         GameManager.Instance.currentGrid.listItem.RemoveAt(GameManager.Instance.currentGrid.listItem.IndexOf(prefab.transform.GetChild(0).GetComponentInChildren<Item>().gameObject));
                     }
 
@@ -3238,13 +3366,8 @@ public class TileSlot : MonoBehaviour
 
                     rightItemsTemp.Add(item);
 
-                    Cover cover = this.GetComponentInChildren<Cover>();
 
-                    cover.transform.DOLocalMoveY(0.36f, timeRotate).SetEase(Ease.Linear)
-                        .OnComplete(() =>
-                        {
-                            StartCoroutine(Rotate(itemRotate, 90, this.transform.position, targetSlot, rightItems));
-                        });
+                    StartCoroutine(Rotate(itemRotate, 90, this.transform.position, targetSlot, rightItems));
                 }
             }
 
@@ -3272,15 +3395,7 @@ public class TileSlot : MonoBehaviour
 
                     downItemsTemp.Add(item);
 
-                    Cover cover = this.GetComponentInChildren<Cover>();
-
-                    cover.transform.DOLocalMoveY(0.36f, timeRotate).SetEase(Ease.Linear)
-                        .OnComplete(() =>
-                        {
-                            StartCoroutine(Rotate(itemRotate, 90, this.transform.position, targetSlot, downItems));
-
-                        });
-
+                    StartCoroutine(Rotate(itemRotate, 90, this.transform.position, targetSlot, downItems));
                 }
             }
 
@@ -3310,13 +3425,8 @@ public class TileSlot : MonoBehaviour
 
                     Cover cover = this.GetComponentInChildren<Cover>();
 
-                    cover.transform.DOLocalMoveY(0.36f, timeRotate).SetEase(Ease.Linear)
-                        .OnComplete(() =>
-                        {
-                            StartCoroutine(Rotate(itemRotate, 90, this.transform.position, targetSlot, leftItems));
 
-
-                        });
+                    StartCoroutine(Rotate(itemRotate, 90, this.transform.position, targetSlot, leftItems));
 
                 }
             }
@@ -3347,12 +3457,7 @@ public class TileSlot : MonoBehaviour
 
                     Cover cover = this.GetComponentInChildren<Cover>();
 
-                    cover.transform.DOLocalMoveY(0.36f, timeRotate).SetEase(Ease.Linear)
-                        .OnComplete(() =>
-                        {
-                            StartCoroutine(Rotate(itemRotate, 90, this.transform.position, targetSlot, upItems));
-
-                        });
+                    StartCoroutine(Rotate(itemRotate, 90, this.transform.position, targetSlot, upItems));
 
                 }
             }
@@ -3647,15 +3752,46 @@ public class TileSlot : MonoBehaviour
     {
         float angle = 0f;
         Vector3 offset = block.transform.position - centerPos;
+        Debug.Log("Centerpos1: " + centerPos);
+
         GameManager.Instance.isRotating = true;
+        float zOriginal = block.GetComponentInChildren<LineRenderer>().GetPosition(1).z;
+
 
         TrailRenderer tempTrailRender = new TrailRenderer();
+
+        Cover cover = this.GetComponentInChildren<Cover>();
+
+        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.2f);
 
         if (block.GetComponentInChildren<TrailRenderer>() != null)
         {
             tempTrailRender = block.GetComponentInChildren<TrailRenderer>();
             tempTrailRender.enabled = false;
         }
+
+        centerPos = new Vector3(centerPos.x, centerPos.y + GameManager.Instance.heightRotate, centerPos.z);
+
+        Debug.Log("Centerpos2: " + centerPos);
+        bool stop = false;
+
+
+        cover.transform.DOMoveY(cover.transform.position.y + GameManager.Instance.heightRotate, GameManager.Instance.timeHeightRotate)
+            .OnComplete(() =>
+            {
+                stop = true;
+            });
+
+
+        block.transform.DOMoveY(block.transform.position.y + GameManager.Instance.heightRotate, GameManager.Instance.timeHeightRotate);
+
+        while (!stop)
+        {
+            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal));
+            yield return null;
+        }
+
 
         while (angle < anglePoint)
         {
@@ -3664,36 +3800,56 @@ public class TileSlot : MonoBehaviour
 
             block.transform.position = new Vector3(newPos.x, newPos.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.2f);
 
+            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal));
 
-            block.GetComponentInChildren<LineRenderer>().SetPosition(0, block.transform.position);
+            if (block.GetComponent<Item>() != null)
+            {
+                GameObject shadow = block.GetComponent<Item>().shadow;
+                shadow.transform.position = new Vector3(block.transform.position.x, block.transform.position.y - 0.1f, shadow.transform.position.z);
+
+            }
 
             angle += Time.deltaTime * speedRotate;
 
-
             yield return null;
         }
-        DOVirtual.DelayedCall(0.01f, () =>
-        {
-            if (tempTrailRender != null)
-            {
-                tempTrailRender.enabled = true;
-            }
-        });
-        
 
-        Cover cover = this.GetComponentInChildren<Cover>();
+        Vector3 newPos1 = centerPos + Quaternion.Euler(0, 0, -anglePoint) * offset;
+
+        block.transform.position = new Vector3(newPos1.x, newPos1.y, GameManager.Instance.listGrid[GameManager.Instance.currentIndexGrid].transform.position.z - 0.2f);
+
+        block.GetComponentInChildren<LineRenderer>().SetPosition(0, block.transform.position);
+
+        stop = false;
 
         DOVirtual.DelayedCall(0.1f, () =>
         {
-            cover.transform.DOLocalMoveY(0.25f, timeRotate).SetEase(Ease.Linear)
-            .OnComplete(() =>
-            {
-                GameManager.Instance.isRotating = false;
+            cover.transform.DOMoveY(cover.transform.position.y - GameManager.Instance.heightRotate, GameManager.Instance.timeHeightRotate)
+                .OnComplete(() =>
+                {
+                    GameManager.Instance.isRotating = false;
+                    stop = true;
 
-            });
+                    DOVirtual.DelayedCall(0.01f, () =>
+                    {
+                        if (tempTrailRender != null)
+                        {
+                            tempTrailRender.enabled = true;
+                        }
+                    });
+
+                });
+            block.transform.DOMoveY(block.transform.position.y - GameManager.Instance.heightRotate, GameManager.Instance.timeHeightRotate);
+
         });
 
 
+        while (!stop)
+        {
+            block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal));
+            yield return null;
+        }
 
         bool checkBlock = true;
 
@@ -3796,6 +3952,8 @@ public class TileSlot : MonoBehaviour
             block.transform.SetParent(targetSlot.transform);
             block.transform.localPosition = Vector3.zero;
             float z = block.GetComponentInChildren<LineRenderer>().GetPosition(1).z;
+
+            Debug.Log("Z: " + z);
             block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, z));
         }
 
@@ -3901,8 +4059,6 @@ public class TileSlot : MonoBehaviour
                 }
             }
         });
-
-
 
 
     }

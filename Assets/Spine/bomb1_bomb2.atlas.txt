@@ -1,0 +1,16 @@
+bomb1_bomb2.png
+size:252,168
+filter:Linear,Linear
+pma:true
+Layer 27
+bounds:2,8,147,158
+offsets:2,0,151,160
+Layer 29
+bounds:151,72,94,94
+offsets:3,3,100,100
+flare
+bounds:151,2,79,68
+offsets:1,1,81,71
+flare2
+bounds:232,22,18,48
+offsets:2,2,21,51

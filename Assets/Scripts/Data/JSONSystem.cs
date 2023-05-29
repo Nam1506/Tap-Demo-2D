@@ -16,12 +16,14 @@ public class JSONSystem : MonoBehaviour
     [SerializeField] GridManager gridManager;
     [SerializeField] TMP_InputField levelField;
     public TMP_InputField moveField;
-    [SerializeField] GameObject itemPrefab;
+    public GameObject itemPrefab;
     [SerializeField] GameObject containerPrefab;
     [SerializeField] CameraController cameraController;
     [SerializeField] TMP_Dropdown dropDown;
     [SerializeField] GameObject mask;
     [SerializeField] GameObject coverPrefab;
+
+    public GameObject boomObject;
 
     private bool overMap;
     private int numberOverMap;
@@ -32,11 +34,19 @@ public class JSONSystem : MonoBehaviour
 
     public string gameScene = "Game";
 
+    private List<int> listLevelRandom;
+
     private const int levelMax = 17;
+    private const int numberRandom = 10;
 
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void Start()
+    {
+        listLevelRandom = new List<int>();
     }
 
     public Color HexToRGBA(string hex)
@@ -191,6 +201,11 @@ public class JSONSystem : MonoBehaviour
     {
         //gridManager.DestroyMap();
 
+        if (listLevelRandom.Count == 6)
+        {
+            listLevelRandom.Clear();
+        }
+
         GameManager.Instance.listGrid.Clear();
 
         overMap = false;
@@ -199,13 +214,14 @@ public class JSONSystem : MonoBehaviour
 
         numberOverMap = number;
 
-        if(level > levelMax)
+        if (level > levelMax)
         {
             while (true)
             {
-                int randomNum = Random.Range(levelMax - 5, levelMax + 1);
-                if(randomNum != tempNumber)
+                int randomNum = Random.Range(levelMax - numberRandom, levelMax + 1);
+                if (!listLevelRandom.Contains(randomNum) && randomNum != tempNumber)
                 {
+                    listLevelRandom.Add(randomNum);
                     tempNumber = randomNum;
                     break;
                 }
@@ -214,6 +230,11 @@ public class JSONSystem : MonoBehaviour
             level = tempNumber;
 
             overMap = true;
+        }
+
+        else
+        {
+            tempNumber = level;
         }
 
         string path = Resources.Load<TextAsset>("Levels/Level" + level).ToString();
@@ -249,7 +270,6 @@ public class JSONSystem : MonoBehaviour
         if (overMap)
         {
             GameManager.Instance.levelText.text = "Level " + numberOverMap.ToString();
-            Debug.Log("levelField.text: " + levelField.text);
         }
 
         //gridManager.GenerateGrid();
@@ -314,22 +334,43 @@ public class JSONSystem : MonoBehaviour
                         if (grid.sprites[map.grid[i][j]].name != "Up" && grid.sprites[map.grid[i][j]].name != "Down" &&
                         grid.sprites[map.grid[i][j]].name != "Left" && grid.sprites[map.grid[i][j]].name != "Right")
                         {
-
-                            item = Instantiate(itemPrefab, slot.transform);
-
-                            // ---------------------------------------------------------------TEMP--------------------------------------------------------------
-                            if(item.GetComponent<Item>().GetNameSprite() == item.GetComponent<Item>().boom)
+                            if (grid.sprites[map.grid[i][j]].name == "Boom")
                             {
-                                item.transform.localScale = Vector3.one * (1.65f / 2.56f);
-
+                                Instantiate(boomObject, slot.transform);
+                                continue;
                             }
-
-                            item.GetComponent<SpriteRenderer>().sprite = grid.sprites[map.grid[i][j]];
-
-                            if (item.GetComponent<Item>().GetNameSprite() == item.GetComponent<Item>().rotate)
+                            else
                             {
-                                Instantiate(coverPrefab, item.transform);
-                                item.transform.localPosition = new Vector3(0, 0, -0.2f);
+                                item = Instantiate(itemPrefab, slot.transform);
+
+                                // ---------------------------------------------------------------TEMP--------------------------------------------------------------
+
+                                item.GetComponent<SpriteRenderer>().sprite = grid.sprites[map.grid[i][j]];
+
+                                //if (item.GetComponent<Item>().GetNameSprite() == item.GetComponent<Item>().boom)
+                                //{
+                                //    item.transform.localScale = Vector3.one * (1.65f / 2.56f);
+
+                                //}
+
+                                if (item.GetComponent<Item>().GetNameSprite() == item.GetComponent<Item>().rotate)
+                                {
+                                    GameObject cover = Instantiate(coverPrefab, item.transform);
+                                    item.transform.localPosition = new Vector3(0, 0, -0.2f);
+                                    item.GetComponent<Item>().cover = cover;
+                                }
+
+                                if (item.GetComponent<Item>().GetNameSprite() == item.GetComponent<Item>().saw)
+                                {
+                                    GameObject shadow = Instantiate(GridManager.Instance.shadowSaw, grid.transform);
+
+                                    item.GetComponent<Item>().shadow = shadow;
+
+                                    shadow.transform.position = new Vector3(slot.transform.position.x, slot.transform.position.y - 0.1f, grid.transform.localPosition.z + 0.05f);
+                                    shadow.transform.DORotate(new Vector3(0f, 0f, 360f), Item.Instance.duration_rotate, RotateMode.LocalAxisAdd)
+                                            .SetEase(Ease.Linear)
+                                     .SetLoops(-1, LoopType.Incremental);
+                                }
                             }
 
                         }
@@ -417,8 +458,8 @@ public class JSONSystem : MonoBehaviour
                         itemSlot.rotateController = rotateItem.GetComponent<TileSlot>();
 
 
-                        Vector3 currentPos = new Vector3(slot.transform.localPosition.x + grid.transform.position.x, slot.transform.localPosition.y + grid.transform.position.y, grid.transform.position.z - 0.3f);
-                        Vector3 rotateItemPos = new Vector3(rotateItem.transform.localPosition.x + grid.transform.position.x, rotateItem.transform.localPosition.y + grid.transform.position.y, grid.transform.position.z - 0.3f);
+                        Vector3 currentPos = new Vector3(slot.transform.localPosition.x + grid.transform.position.x, slot.transform.localPosition.y + grid.transform.position.y, grid.transform.position.z - 0.31f);
+                        Vector3 rotateItemPos = new Vector3(rotateItem.transform.localPosition.x + grid.transform.position.x, rotateItem.transform.localPosition.y + grid.transform.position.y, grid.transform.position.z - 0.31f);
                         lineRenderer.SetPosition(0, currentPos);
                         lineRenderer.SetPosition(1, rotateItemPos);
 
@@ -504,7 +545,6 @@ public class JSONSystem : MonoBehaviour
                 }
             }
         }
-
 
         float cameraSize = 10f;
 

@@ -37,14 +37,16 @@ public class PopupController : MonoBehaviour
     private bool canRandom = false;
     private Coroutine coroutineStartNumber;
 
+    private bool canTurnOffPopUp;
+
     [SerializeField] float jumpPower;
     [SerializeField] float durationJump;
     [SerializeField] int numberCoin;
-
+    [SerializeField] float timeCoin;
+    [SerializeField] float targetScale;
 
     //--------Config--------
     private float timeFade = 0.35f;
-    [SerializeField] float timeCoin;
 
     private const float radius = 3f;
 
@@ -80,22 +82,30 @@ public class PopupController : MonoBehaviour
         popUpSetting.SetActive(true);
         popUpSetting.GetComponent<CanvasGroup>().DOFade(1, timeFade);
         GameManager.Instance.state = GameManager.State.Pause;
+
+        canTurnOffPopUp = true;
+
     }
 
     public void TurnOffPopUpSetting()
     {
-        AudioManager.Instance.PlaySFXPopUp("Close");
+        if (canTurnOffPopUp)
+        {
+            AudioManager.Instance.PlaySFXPopUp("Close");
 
-        popUpSetting.GetComponent<CanvasGroup>().DOFade(0, timeFade)
-            .OnComplete(() =>
-            {
-                popUpSetting.SetActive(false);
-                GameManager.Instance.state = GameManager.State.Play;
-            });
+            popUpSetting.GetComponent<CanvasGroup>().DOFade(0, timeFade)
+                .OnComplete(() =>
+                {
+                    popUpSetting.SetActive(false);
+                    GameManager.Instance.state = GameManager.State.Play;
+                });
+            canTurnOffPopUp = false;
+        }
     }
 
     public void TurnOnPopupLose()
     {
+        AudioManager.Instance.PlaySFXPopUp("Lose");
         popUpLose.SetActive(true);
         popUpLose.GetComponent<CanvasGroup>().DOFade(1f, timeFade);
         GameManager.Instance.state = GameManager.State.Pause;
@@ -121,7 +131,9 @@ public class PopupController : MonoBehaviour
 
     public void TurnOnPopupWin()
     {
+        AudioManager.Instance.PlaySFXPopUp("Win");
         popUpWin.SetActive(true);
+
         fireWorkBase.SetActive(true);
 
         popUpWin.GetComponent<CanvasGroup>().DOFade(1f, timeFade)
@@ -217,7 +229,7 @@ public class PopupController : MonoBehaviour
         foreach (GameObject coinPre in listCoin)
         {
             coinPre.transform.position = new Vector3(coinPre.transform.position.x, coinPre.transform.position.y, targetJump.z);
-            coinPre.transform.DOScale(1.5f, 0.1f).SetEase(Ease.OutBack);
+            coinPre.transform.DOScale(targetScale, 0.1f).SetEase(Ease.OutBack);
 
             yield return new WaitForSeconds(0.05f);
         }
@@ -255,6 +267,7 @@ public class PopupController : MonoBehaviour
 
         while (elapsed <= totalDuration)
         {
+            AudioManager.Instance.PlaySFXPopUp("CountCoin");
             process = Mathf.Clamp01(elapsed / totalDuration);
             currentCoin = targetCoin - (1 - process) * deltaCoin;
             coin.text = Mathf.RoundToInt(currentCoin).ToString();

@@ -58,24 +58,26 @@ MonoBehaviour:
   - {fileID: -151000188, guid: 6b19c7324aa96724e8ca76081ae7aefd, type: 3}
   - {fileID: 546074065, guid: 6b19c7324aa96724e8ca76081ae7aefd, type: 3}
   - {fileID: 21300000, guid: 03f41e39b150ddd4193d3f11a38e9e45, type: 3}
-  - {fileID: 21300000, guid: 3bea453da5429544ba7403008c79f57a, type: 3}
-  - {fileID: 21300000, guid: 224cabef76f09264f80916fdb1e3044f, type: 3}
+  - {fileID: -2012163706, guid: fc42f3335c9c4134a891a71c092cb84e, type: 3}
+  - {fileID: 21300000, guid: 7eaab53df4483aa4fa3de214c57b5c21, type: 3}
   - {fileID: 21300000, guid: dc68b80fd821bf144b4cb623fa595993, type: 3}
-  - {fileID: 21300000, guid: 8f7ebd3b90918f24f9b60929712d4495, type: 3}
+  - {fileID: 21300000, guid: d3481de1b89b56b4f8699cd69192b00f, type: 3}
   sprites:
   - {fileID: 21300000, guid: cf2fd31e3b9fe4348b90fba7eaab3b7c, type: 3}
   - {fileID: 21300000, guid: ecf2daeeec334a547af19f9075f63443, type: 3}
   - {fileID: 21300000, guid: c18b16f37fbc1904eb152115177847a7, type: 3}
   - {fileID: 21300000, guid: 57d41e126fc275343986323d7d2bc33b, type: 3}
   - {fileID: 21300000, guid: 3315b3958355c364c9baf43741f2d476, type: 3}
-  - {fileID: 21300000, guid: 3bea453da5429544ba7403008c79f57a, type: 3}
-  - {fileID: 21300000, guid: 224cabef76f09264f80916fdb1e3044f, type: 3}
+  - {fileID: -2012163706, guid: fc42f3335c9c4134a891a71c092cb84e, type: 3}
+  - {fileID: 21300000, guid: 7eaab53df4483aa4fa3de214c57b5c21, type: 3}
   - {fileID: 21300000, guid: dc68b80fd821bf144b4cb623fa595993, type: 3}
-  - {fileID: 21300000, guid: 8f7ebd3b90918f24f9b60929712d4495, type: 3}
+  - {fileID: 21300000, guid: d3481de1b89b56b4f8699cd69192b00f, type: 3}
   listItem: []
   listRotate: []
   listHiddenNumber: []
   blockedTile: {fileID: 0}
+  mask: {fileID: 0}
+  shadowSaw: {fileID: 8982803871963357407, guid: 997088a8e969d094a97a97085dee5389, type: 3}
   haveSaw: 0
   moveCount: 0
   breakPrefab: {fileID: 0}
