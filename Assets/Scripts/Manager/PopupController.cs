@@ -120,6 +120,9 @@ public class PopupController : MonoBehaviour
 
         GameManager.Instance.listGrid.Clear();
 
+        GameManager.Instance.addBoomMask.GetComponent<Image>().enabled = false;
+        GameManager.Instance.boomClicking = false;
+
         JSONSystem.Instance.LoadLevel(PlayerPrefs.GetInt("level"));
         popUpLose.GetComponent<CanvasGroup>().DOFade(0, timeFade)
             .OnComplete(() =>
@@ -157,6 +160,9 @@ public class PopupController : MonoBehaviour
             Destroy(grid.gameObject);
         }
 
+        GameManager.Instance.addBoomMask.GetComponent<Image>().enabled = false;
+        GameManager.Instance.boomClicking = false;
+
         GameManager.Instance.listGrid.Clear();
 
         JSONSystem.Instance.LoadLevel(PlayerPrefs.GetInt("level") + 1);
@@ -169,6 +175,22 @@ public class PopupController : MonoBehaviour
                 GameManager.Instance.state = GameManager.State.Play;
                 canRandom = false;
             });
+    }
+
+    public void NextLevelButton()
+    {
+        foreach (GridManager grid in GameManager.Instance.listGrid)
+        {
+            Destroy(grid.gameObject);
+        }
+
+        GameManager.Instance.listGrid.Clear();
+
+        DOTween.KillAll();
+        JSONSystem.Instance.LoadLevel(PlayerPrefs.GetInt("level") + 1);
+        PlayerPrefs.SetInt("level", PlayerPrefs.GetInt("level") + 1);
+        GameManager.Instance.state = GameManager.State.Play;
+
     }
 
     public void GetCoinButton()

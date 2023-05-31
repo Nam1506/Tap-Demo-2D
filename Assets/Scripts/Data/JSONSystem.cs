@@ -8,7 +8,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
 using Unity.VisualScripting;
-using UnityEditor.Tilemaps;
 
 public class JSONSystem : MonoBehaviour
 {
@@ -200,10 +199,14 @@ public class JSONSystem : MonoBehaviour
     {
         //gridManager.DestroyMap();
 
+        Debug.Log("1");
+
         if (listLevelRandom.Count == 6)
         {
             listLevelRandom.Clear();
         }
+
+        Debug.Log("2");
 
         GameManager.Instance.listGrid.Clear();
 
@@ -236,9 +239,15 @@ public class JSONSystem : MonoBehaviour
             tempNumber = level;
         }
 
+        Debug.Log("3");
+
+
         string path = Resources.Load<TextAsset>("Levels/" + level + "_lvlData").ToString();
 
         TempData tempData = JsonConvert.DeserializeObject<TempData>(path);
+
+        Debug.Log("4");
+
 
         Data data = new Data();
 
@@ -354,10 +363,7 @@ public class JSONSystem : MonoBehaviour
             data.map.Add(map);
             
         }
-
-        string json = JsonConvert.SerializeObject(data);
-
-        File.WriteAllText(Application.dataPath + "/Resources/Levels/Level" + data.level + ".json", json);
+        Debug.Log("5");
 
         LoadMap(data);
 
@@ -365,6 +371,7 @@ public class JSONSystem : MonoBehaviour
 
     public void LoadMap(Data data)
     {
+        Debug.Log("6");
 
         if (SceneManager.GetActiveScene().name != gameScene)
         {

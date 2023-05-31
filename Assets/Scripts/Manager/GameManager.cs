@@ -379,6 +379,9 @@ public class GameManager : MonoBehaviour
             Destroy(grid.gameObject);
         }
 
+        addBoomMask.GetComponent<Image>().enabled = false;
+        boomClicking = false;
+
         DOTween.KillAll();
 
         AudioManager.Instance.sfxSource2.pitch = 1;
@@ -425,6 +428,33 @@ public class GameManager : MonoBehaviour
                         }
 
                         cantBoom.Add(currentGrid.GetTileSlot(x, y));
+                    }
+                }
+            }
+
+            for(int i = 0; i < currentGrid.slots.Count; i++)
+            {
+                if (currentGrid.slots[i].GetComponentInChildren<Item>() != null)
+                {
+                    if (currentGrid.slots[i].GetComponentInChildren<Item>().type == "Boom")
+                    {
+                        TileSlot tileSlot = currentGrid.slots[i].GetComponent<TileSlot>();
+
+                        for (int j = -1; j <= 1; j++)
+                        {
+                            for (int k = -1; k <= 1; k++)
+                            {
+                                int x = tileSlot.rowPos + j;
+                                int y = tileSlot.colPos + k;
+
+                                if (x < 0 || x >= currentGrid.rows || y < 0 || y >= currentGrid.cols)
+                                {
+                                    continue;
+                                }
+
+                                cantBoom.Add(currentGrid.GetTileSlot(x, y));
+                            }
+                        }
                     }
                 }
             }

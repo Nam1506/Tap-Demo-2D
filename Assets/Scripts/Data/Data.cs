@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.MemoryProfiler;
-using UnityEditor.Tilemaps;
 using UnityEngine;
 
 public class Data

@@ -8137,6 +8137,7 @@ MonoBehaviour:
   endScale: 2.7
   durationScale: 1
   remainAddMove: {fileID: 1233430587}
+  cantBoom: []
 --- !u!4 &908730033
 Transform:
   m_ObjectHideFlags: 0
@@ -14184,7 +14185,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 619063112}
         m_TargetAssemblyTypeName: PopupController, Assembly-CSharp
-        m_MethodName: TurnOnPopUpSetting
+        m_MethodName: NextLevelButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

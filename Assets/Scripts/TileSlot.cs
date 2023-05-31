@@ -81,7 +81,7 @@ public class TileSlot : MonoBehaviour
 
         if (this.transform.childCount != 1)
         {
-            if (GameManager.Instance.boomClicking)
+            if (GameManager.Instance.boomClicking && !GameManager.Instance.cantBoom.Contains(this.gameObject))
             {
                 GameObject itemm = Instantiate(JSONSystem.Instance.boomObject, this.transform);
                 GameManager.Instance.boomClicking = false;
@@ -2378,6 +2378,7 @@ public class TileSlot : MonoBehaviour
 
     private void Explosion(int i, int j)
     {
+        Debug.Log("Explosionn");
         for (int x = -1; x <= 1; x++)
         {
 
@@ -2386,19 +2387,27 @@ public class TileSlot : MonoBehaviour
                 int posX = i + x;
                 int posY = j + y;
 
+                Debug.Log("x y: " + posX + " " + posY);
+
+
                 if (posX < 0 || posY < 0 || posX >= gridManager.rows || posY >= gridManager.cols)
                 {
                     continue;
                 }
 
+                Debug.Log("x y: " + x + " " + y);
+
                 GameObject prefab = gridManager.GetTileSlot(posX, posY);
 
                 if (prefab.transform.childCount != 0 && prefab.GetComponentInChildren<Item>().type != "Rotate")
                 {
+                    Debug.Log("Enter");
                     CheckChildrenOfRotation(prefab.GetComponent<TileSlot>());
 
-                    if (prefab.transform.GetChild(0).childCount != 0)
+                    if (prefab.GetComponentInChildren<Item>().isArrow())
                     {
+                        Debug.Log("Enter");
+
                         GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
 
                         breakPre.transform.position = new Vector3(prefab.transform.position.x, prefab.transform.position.y, prefab.transform.position.z);
@@ -2415,14 +2424,33 @@ public class TileSlot : MonoBehaviour
                         GameManager.Instance.currentGrid.listItem.RemoveAt(GameManager.Instance.currentGrid.listItem.IndexOf(prefab.transform.GetChild(0).GetComponentInChildren<Item>().gameObject));
                     }
 
-                    //else
-                    //{
-                    //    GameManager.Instance.listItem.RemoveAt(GameManager.Instance.listItem.IndexOf(prefab.transform.GetChild(0).GetComponentInChildren<Item>().gameObject));
-                    //}
+                    else
+                    {
+                        Debug.Log("Enter");
 
+                        if(prefab.GetComponentInChildren<Item>().type == item.saw)
+                        {
+                            Destroy(prefab.GetComponentInChildren<Item>().shadow.gameObject);
+                        }
+
+                        GameObject breakPre = Instantiate(GameManager.Instance.currentGrid.breakPrefab);
+
+                        breakPre.transform.position = new Vector3(prefab.transform.position.x, prefab.transform.position.y, prefab.transform.position.z);
+
+                        ParticleSystem.MainModule main = breakPre.GetComponent<ParticleSystem>().main;
+
+                        float timeBreak = main.duration;
+
+                        DOVirtual.DelayedCall(timeBreak + 0.1f, () =>
+                        {
+                            Destroy(breakPre.gameObject);
+                        });
+                    }
 
                     DOVirtual.DelayedCall(0f, () =>
                     {
+                        Debug.Log("Enter");
+
                         foreach (Transform transform in prefab.transform)
                         {
                             if (transform.GetComponentInChildren<TextMeshProUGUI>() != null)
@@ -4048,7 +4076,7 @@ public class TileSlot : MonoBehaviour
         while (!stop)
         {
             block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal - 0.5f));
-            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal - 0.5f));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.5f, zOriginal));
             yield return null;
         }
 
@@ -4118,7 +4146,7 @@ public class TileSlot : MonoBehaviour
         while (!stop)
         {
             block.GetComponentInChildren<LineRenderer>().SetPosition(0, new Vector3(block.transform.position.x, block.transform.position.y, zOriginal - 0.5f));
-            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal - 0.5f));
+            block.GetComponentInChildren<LineRenderer>().SetPosition(1, new Vector3(cover.transform.position.x, cover.transform.position.y - 0.25f, zOriginal));
             yield return null;
         }
 
